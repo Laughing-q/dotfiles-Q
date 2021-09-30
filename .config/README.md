@@ -22,3 +22,4 @@
 
 ## Emoji
 - [https://www.wikiemoji.com/](https://www.wikiemoji.com/)
+- [Luke Smith's emoji file](https://github.com/Laughing-q/dotfile-Q/blob/master/.local/share/emoji) 
