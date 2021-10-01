@@ -1,0 +1,13 @@
+if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/x11/xprofile" ]; then
+	. "${XDG_CONFIG_HOME:-$HOME/.config}/x11/xprofile"
+else
+	. "$HOME/.xprofile"
+fi
+
+if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/x11/xmodmap" ]; then
+	xmodmap "${XDG_CONFIG_HOME:-$HOME/.config}/x11/xmodmap"
+else
+	xmodmap "$HOME/.xprofile"
+fi
+
+exec dwm
