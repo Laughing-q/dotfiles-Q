@@ -4,7 +4,15 @@ homeconfig="$HOME/.config"
 bkconfig="$HOME/.config/backup"
 dotconfig="./.config"
 
-if [[ ! (-d $bkconfig) ]]; then
+# if [[ ! (-d $bkconfig) ]]; then
+#   mkdir -p $bkconfig
+# fi
+
+if [[ -d $bkconfig ]]; then
+  echo "backup dir $bkconfig existed, remove it."
+  rm -r "$bkconfig"
+  mkdir -p $bkconfig
+else
   mkdir -p $bkconfig
 fi
 
