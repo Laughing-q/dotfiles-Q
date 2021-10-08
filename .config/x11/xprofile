@@ -1,7 +1,9 @@
 #!/bin/sh
 
+# wal -i /home/laughing/Pictures/DT/0026.jpg > /dev/null &
+setbg /home/laughing/Pictures/DT/ &
+
 picom -b &
-wal -i /home/laughing/Pictures/DT/0026.jpg > /dev/null &
 
 fcitx &
 dunst &

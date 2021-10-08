@@ -8,24 +8,13 @@ dotconfig="./.config"
 #   mkdir -p $bkconfig
 # fi
 
-if [[ -d $bkconfig ]]; then
-  echo "backup dir $bkconfig existed, remove it."
-  rm -r "$bkconfig"
-  mkdir -p $bkconfig
-else
-  mkdir -p $bkconfig
-fi
+[[ -d $bkconfig ]] && echo "backup dir $bkconfig existed, remove it." && rm -r "$bkconfig"
+mkdir -p $bkconfig
 
 for c in $configfile
 do
-  if [[ -d "$homeconfig/$c" ]]; then
-    echo "backup $homeconfig/$c to $bkconfig/$c.bk"
-    cp -r "$homeconfig/$c" "$bkconfig/$c.bk"
-    rm -r "$homeconfig/$c"
-  fi
+  [[ -d "$homeconfig/$c" ]] && echo "backup $homeconfig/$c to $bkconfig/$c.bk" && cp -r "$homeconfig/$c" "$bkconfig/$c.bk" && rm -r "$homeconfig/$c"
 
-  if [[ -d "$dotconfig/$c" ]]; then
-    echo "update $dotconfig/$c to $homeconfig/$c"
-    cp -r "$dotconfig/$c" "$homeconfig"
-  fi
+  [[ -d "$dotconfig/$c" ]] && echo "update $dotconfig/$c to $homeconfig/$c" && cp -r "$dotconfig/$c" "$homeconfig"
+
 done
