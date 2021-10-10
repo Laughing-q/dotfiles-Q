@@ -14,6 +14,7 @@
 
 
 ## File Manager
+- lf
 - [ranger](https://github.com/Laughing-q/ranger) 
 
 ## Wallpapers
