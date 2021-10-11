@@ -1,7 +1,15 @@
+#
 set icons
 set shell bash
 set shellopts '-eu'
 set ifs "\n"
+# set drawbox
+
+# Vars that depend on environmental variables
+# $lf -remote "send $id set previewer ${XDG_CONFIG_HOME:-$HOME/.config}/lf/scope"
+# set previewer ~/.config/lf/previewr.sh
+set previewer ~/.config/lf/scope
+set cleaner ~/.config/lf/clear_img.sh
 
 # cmds/functions
 cmd open ${{
@@ -49,6 +57,50 @@ cmd zip ${{
     rm -rf $1
 }}
 
+cmd paste &{{
+    set -- $(cat ~/.local/share/lf/files)
+    mode="$1"
+    shift
+    case "$mode" in
+        copy)
+            rsync -av --ignore-existing --progress -- "$@" . |
+            stdbuf -i0 -o0 -e0 tr '\r' '\n' |
+            while IFS= read -r line; do
+                lf -remote "send $id echo $line"
+            done
+            ;;
+        move) mv -n -- "$@" .;;
+    esac
+    rm ~/.local/share/lf/files
+    lf -remote "send clear"
+}}
+
+cmd mkdir $mkdir -p "$(echo $* | tr ' ' '\ ')"
+
+# yank
+cmd yank-dirname $dirname -- "$f" | head -c-1 | xclip -i -selection clipboard
+cmd yank-path $printf '%s' "$fx" | xclip -i -selection clipboard
+cmd yank-basename $basename -a -- $fx | head -c-1 | xclip -i -selection clipboard
+
+cmd yank-basename-without-extension ${{
+    echo "$fx" |
+      xargs -r -d '\n' basename -a |
+      awk -e '{
+        for (i=length($0); i > 0; i--) {
+          if (substr($0, i, 1) == ".") {
+            if (i == 1) print $0
+            else print substr($0, 0, i-1)
+
+            break
+          }
+        }
+
+        if (i == 0)
+          print $0
+      }' |
+      if [ -n "$fs" ]; then cat; else tr -d '\n'; fi |
+      xclip -i -selection clipboard
+}}
 
 # Keybindings
 map i up
@@ -60,6 +112,7 @@ map l open
 map I push 5i
 map K push 5k
 
+# go dir
 map D delete
 map gpw cd /d/projects/workCode
 map gpy cd /d/projects/research/yolov5
@@ -88,15 +141,47 @@ map - search-prev
 map = find-next
 map - find-prev
 
+# system
+map S $ $SHELL
+map M push :mkdir<space>
+map x $$f
 map <backspace2> set hidden!
+map <esc> clear
+map w
+
+# compress and extract
+map e extract
+map t push :tar<space>
+map Z push :zip<space>
 
 # autojump
 cmd aj %lf -remote "send $id cd '$(autojump $1)'"
-map a push :aj<space>
+map J push :aj<space>
 
 # fzf
 cmd fzf $nvim $(find . -name "$1" | fzf)
-map f push :fzf<space>
+map <c-f> push :fzf<space>
 
-map S $ $SHELL
-map E extract
+# rename
+map A rename  # at the very end
+map a push A<a-b><a-b><a-f> # before extention
+map h push A<c-a>
+
+# set bg
+map b $setbg $f
+
+# yank
+map y
+map yy copy
+map yp yank-path
+map yd yank-dirname
+map yn yank-basename
+map y. yank-basename-without-extension
+
+# open with
+cmd open-with $"$@" $fx
+map r push :open-with<space>
+
+# warning
+%[ $LF_LEVEL -eq 1 ] || echo "Warning: You're in a nested lf instance!"
+
