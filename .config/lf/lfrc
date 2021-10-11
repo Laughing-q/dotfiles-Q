@@ -185,3 +185,7 @@ map r push :open-with<space>
 # warning
 %[ $LF_LEVEL -eq 1 ] || echo "Warning: You're in a nested lf instance!"
 
+# new file
+map V push :$nvim<space>
+map T push :$touch<space>
+
