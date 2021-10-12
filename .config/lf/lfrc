@@ -21,7 +21,7 @@ cmd open ${{
         image/*) rotdir $f | grep -i "\.\(png\|jpg\|jpeg\|gif\|webp\|tif\|ico\)\(_large\)*$" | setsid -f sxiv -aio 2>/dev/null | lf-select & ;;
         audio/*) mpv --audio-display=no $f ;;
         video/*) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
-        application/pdf|application/vnd*|application/epub*) setsid -f zathura $fx >/dev/null 2>&1 ;;
+        application/pdf|application/vnd*|application/epub*) setsid -f okular $fx >/dev/null 2>&1 ;;
         application/pgp-encrypted) $EDITOR $fx ;;
         *) for f in $fx; do setsid -f $OPENER $f >/dev/null 2>&1; done;;
     esac
@@ -189,3 +189,11 @@ map r push :open-with<space>
 map V push :$nvim<space>
 map T push :$touch<space>
 
+# mark
+map m
+map mm mark-save
+map ml mark-load
+map mr mark-remove
+
+# lazygit
+map <c-g> $lazygit
