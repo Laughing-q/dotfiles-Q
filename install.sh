@@ -1,3 +1,4 @@
+#!/bin/sh
 configfile=$(ls -l .config | awk '/^d/ {print $9}')
 
 homeconfig="$HOME/.config"
