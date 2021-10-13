@@ -102,6 +102,8 @@ cmd yank-basename-without-extension ${{
       xclip -i -selection clipboard
 }}
 
+cmd show-media-size %exiftool "$fx" | sed -n '/Image Size/p'
+
 # Keybindings
 map i up
 map k down
@@ -166,6 +168,7 @@ map <c-f> push :fzf<space>
 map A rename  # at the very end
 map a push A<a-b><a-b><a-f> # before extention
 map h push A<c-a>
+map c push A<c-u>
 
 # set bg
 map b $setbg $f
@@ -197,3 +200,6 @@ map mr mark-remove
 
 # lazygit
 map <c-g> $lazygit
+
+# show media size
+map w show-media-size
