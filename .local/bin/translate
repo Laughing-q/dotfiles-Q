@@ -1,8 +1,11 @@
 #!/bin/sh
 
-text="$(xclip -o)"
-echo $text | grep -q '^\s*\S\+\s*$' && notify-send "$(fanyi "$(xclip -o)")" && exit 0
+# text="$(xclip -o)"
+text="$(xclip -o -selection clipboard)"
+# if there is a single word, use `fanyi`.
+echo $text | grep -q '^\s*\S\+\s*$' && notify-send "$(fanyi "$text")" && exit 0
 
+# if get a sentence, use browser to get `baidufanyi`.
 address="$(echo $text | awk 'ORS=NR?" ":"\n"{print}'| xargs | sed 's/- //g;s/ /%20/g')"
 # echo $text
 # echo $address
