@@ -1,0 +1,10 @@
+#!/bin/sh
+
+text="$(xclip -o)"
+echo $text | grep -q '^\s*\S\+\s*$' && notify-send "$(fanyi "$(xclip -o)")" && exit 0
+
+address="$(echo $text | awk 'ORS=NR?" ":"\n"{print}'| xargs | sed 's/- //g;s/ /%20/g')"
+# echo $text
+# echo $address
+$BROWSER "https://fanyi.baidu.com/#en/zh/$address" --new-window
+
