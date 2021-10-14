@@ -15,6 +15,7 @@ set cleaner ~/.config/lf/clear_img.sh
 cmd open ${{
     case $(file --mime-type $f -b) in
         image/vnd.djvu|application/pdf|application/octet-stream) setsid -f zathura $fx >/dev/null 2>&1 ;;
+        # image/vnd.djvu|application/pdf|application/octet-stream) setsid -f okular $fx >/dev/null 2>&1 ;;
         text/*) $EDITOR $fx;;
         image/x-xcf) setsid -f gimp $f >/dev/null 2>&1 ;;
         image/svg+xml) display -- $f ;;
