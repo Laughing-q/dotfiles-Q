@@ -1,16 +1,17 @@
 [global]
     monitor = 0
     follow = keyboard
-    geometry = "350x5-0+24"
+    # geometry = "350x5-0+24"
+    geometry = "400x5-10+30"
     indicate_hidden = yes
     shrink = yes
     transparency = 20
     notification_height = 0
     separator_height = 2
-    padding = 0
-    horizontal_padding = 8
+    padding = 5
+    horizontal_padding = 5
     frame_width = 3
-    frame_color = "{color4}"
+    # frame_color = "{color4}"
 
     # Define a color for the separator.
     # possible values are:
@@ -24,7 +25,7 @@
     sort = yes
 
     idle_threshold = 120
-    font = Monospace 14
+    font = Monospace 12
     line_height = 0
     markup = full
 
@@ -54,7 +55,7 @@
     sticky_history = yes
     history_length = 20
     dmenu = /usr/bin/dmenu -p dunst:
-    browser = /usr/bin/firefox -new-tab
+    browser = $BROWSER --new-window
 
     # Always run rule-defined scripts, even if the notification is suppressed
     always_run_script = true
@@ -75,20 +76,20 @@
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.
     # Otherwise the "#" and following would be interpreted as a comment.
-    background = "{background}"
-    foreground = "{foreground}"
+    background = "#53768E"
+    foreground = "#FFFFFF"
     timeout = 5
     # Icon for notifications with low urgency, uncomment to enable
     #icon = /path/to/icon
 
 [urgency_normal]
-    background = "{background}"
-    foreground = "{foreground}"
+    background = "#53768E"
+    foreground = "#FFFFFF"
     timeout = 5
 
 [urgency_critical]
-    background = "{background}"
-    foreground = "{foreground}"
+    background = "#53768E"
+    foreground = "#FFFFFF"
     frame_color = "#fabd2f"
     timeout = 0
 
