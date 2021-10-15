@@ -1,32 +1,40 @@
 #!/bin/sh
 
-tmpfile="/home/laughing/test/cmd_test4.txt"
-# find command prompt
-ps1=$(grep "\S" "$tmpfile" | tail -n 1 | sed 's/^\s*//' | cut -d' ' -f1)  
-# ps1=$(grep "\S" "$tmpfile" | tail -n 1 | sed 's/^\s*//' | awk '{print$1" "$2}')  
+# tmpfile="/home/laughing/test/cmd_test4.txt"
+tmpfile=$(mktemp /tmp/st-cmd-output.XXXXXX)
+trap 'rm "$tmpfile"' 0 1 15
+sed -n "w $tmpfile"
+sed -i 's/\x0//g' "$tmpfile"
 
-chosen="$(grep -F "$ps1" "$tmpfile" | sed '$ d' | tac | \
+# find command prompt
+base=$(grep "\S" "$tmpfile" | tail -n 1 | sed 's/^\s*//' | cut -d' ' -f1)  # (base)
+
+chosen="$(grep -F "$base" "$tmpfile" | sed '$ d' | tac | \
   dmenu -p "Copy which command's output?" -i -l 10 | \
-  sed 's/[0-9]\+:[0-9]\+:[0-9]\+//g')"
+  sed 's/[0-9]\+:[0-9]\+:[0-9]\+//g; s/✗//g')"
+
+head="$(echo $chosen | awk '{print $1" "$2}')"  # (base) ➜
 
 if echo $chosen | grep -q "git:(\S\+)"; then
   command="$(echo $chosen | \
     awk -F " " '{for (i=5;i<=(NF);i++)printf("%s ", $i);print ""}')"
     # sed 's/^(.*)//g; s/[0-9]\+:[0-9]\+:[0-9]\+//g')"
+  dir="$(echo $chosen | awk '{print $3" "$4}')"  # dir git:(master)
 else
   command="$(echo $chosen | \
     awk -F " " '{for (i=4;i<=(NF);i++)printf("%s ", $i);print ""}')"
+  dir="$(echo $chosen | awk '{print $3}')"  # dir git:(master)
 fi
 
+# echo $head
+# echo $dir
 # echo $command
-# chosen="$(echo $chosen | sed 's/(/\\(/g; s/)/\\)/g')"
-# ps1="$(echo $ps1 | sed 's/(/\\(/g; s/)/\\)/g')"
-echo $chosen
-echo $ps1
+total="$head\s*$dir\s*✗*\s*$command" # (base) ➜ dir [✗] command
+total="$(echo $total | sed 's/(/\\(/g; s/)/\\)/g;')"
+base="$(echo $base | sed 's/(/\\(/g; s/)/\\)/g;')"
+# echo $base
+# echo $total
 
-# eps1="$(echo "$ps1" | sed 's/[^^]/[&]/g; s/\^/\\^/g')"
-# echo $ps1
+# awk "/^$total/{p=1;print;next} p&&/$base/{p=0};p" "$tmpfile" | xclip -selection clipboard
+echo "$(awk "/^$total/{p=1;print;next} p&&/$base/{p=0};p" "$tmpfile")" | xclip -selection clipboard
 
-# echo "$(awk "/^$chosen/{p=1;print;next} p&&/$ps1/{p=0};p" "$tmpfile")"
-# echo "$(sed -n '/^(base) ➜  ~ cat site.json.*/,/^(base) ➜  ~.*/p' "$tmpfile")"
-echo "$(sed -n '/^(base) ➜  ~ cat site.json.*/,/^(base) ➜  ~.*/p' "$tmpfile")"

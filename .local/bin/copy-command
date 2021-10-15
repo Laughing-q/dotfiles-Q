@@ -1,0 +1,26 @@
+#!/bin/sh
+
+tmpfile="/home/laughing/test/cmd_test4.txt"
+# trap 'rm "$tmpfile"' 0 1 15
+# tmpfile=$(mktemp /tmp/st-cmd-output.XXXXXX)
+# sed -n "w $tmpfile"
+# sed -i 's/\x0//g' "$tmpfile"
+
+# find command prompt
+base=$(grep "\S" "$tmpfile" | tail -n 1 | sed 's/^\s*//' | cut -d' ' -f1)  # (base)
+
+chosen="$(grep -F "$base" "$tmpfile" | sed '$ d' | tac | \
+  dmenu -p "Copy which command's output?" -i -l 10 | \
+  sed 's/[0-9]\+:[0-9]\+:[0-9]\+//g; s/✗//g')"
+
+if echo $chosen | grep -q "git:(\S\+)"; then
+  command="$(echo $chosen | \
+    awk -F " " '{for (i=5;i<=(NF);i++)printf("%s ", $i);print ""}')"
+    # sed 's/^(.*)//g; s/[0-9]\+:[0-9]\+:[0-9]\+//g')"
+else
+  command="$(echo $chosen | \
+    awk -F " " '{for (i=4;i<=(NF);i++)printf("%s ", $i);print ""}')"
+fi
+
+echo "$command" | xclip -selection clipboard
+
