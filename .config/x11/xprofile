@@ -4,6 +4,7 @@
 setbg /home/laughing/Pictures/DT/0223.jpg &
 
 picom -b &
+unclutter &		# Remove mouse when idle
 
 fcitx &
 dunst &
