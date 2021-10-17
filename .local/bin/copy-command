@@ -34,5 +34,5 @@ set -o history
 # ' number : number:0;# command' -> abandon
 history | sed -n '/^\s*[0-9]\+\s*:\s*[0-9]\+:0;[^#]/p' | tac |
   sed 's/^\s*[0-9]\+\s*:\s*[0-9]\+:0;//g' | \
-  dmenu -p "Copy which command?" -l 30 | xclip -selection clipboard
+  dmenu -i -l 30 -p "Copy which command?" | xclip -selection clipboard
 

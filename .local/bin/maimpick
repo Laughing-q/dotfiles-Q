@@ -1,0 +1,59 @@
+#!/bin/sh
+
+modes=(
+"Save recently"
+"Save new"
+"Copy"
+)
+
+target=$(printf '%s\n' "${modes[@]}" | dmenu -i -l 3 -p 'Take screenshot of:' "$@") || exit 1
+_num=5
+
+history='/tmp/screenshot_history.txt'
+[[ ! ( -f "$history" ) ]] && touch "$history"
+[[ $(cat "$history" | wc -l) -gt $_num ]] && \
+  cat "$history" | tail -n $_num > "$history.temp" && \
+  rm "$history" && \
+  mv "$history.temp" "$history"
+
+case "$target" in
+  'Save new')
+    # maim -s "/tmp/screenshot.png"
+    current_dir="$(find $HOME -type d -user laughing | \
+      grep -v '\/\.' | dmenu -i -l 10 -p 'Which dir to save?')"
+    [[ -z $current_dir ]] && current_dir="$HOME"
+
+    # get the line number
+    nu="$(grep -n "$current_dir\$" "$history" | awk -F ":" '{print $1}')"
+    # delete this line, then add it to the last
+    [[ ! (-z $nu) ]] && sed -i "$nu d" "$history"
+    echo "$current_dir" >> "$history"
+
+    pic_name="$(dmenu -p 'save name?')"
+    [[ -z $pic_name ]] && pic_name="pic-selected-"$(date '+%y%m%d-%H%M-%S')""
+    # cp "/tmp/screenshot.png" "$current_dir/$pic_name.png"
+    maim -s "$current_dir/$pic_name.png"
+  ;;
+  'Save recently')
+    # maim -s "/tmp/screenshot.png"
+
+    current_dir="$(tac "$history" | dmenu -i -l 10 -p 'Which dir to save?')"
+    [[ -z $current_dir ]] && current_dir="$HOME"
+    # get the line number
+    nu="$(grep -n "$current_dir\$" "$history" | awk -F ":" '{print $1}')"
+    # this line won't work.
+    # sed "s/$current_dir//g" "$history"
+    # delete this line, then add it to the last
+    [[ ! (-z $nu) ]] && sed -i "$nu d" "$history"
+    echo "$current_dir" >> "$history"
+
+    pic_name="$(dmenu -p 'save name?')"
+    [[ -z $pic_name ]] && pic_name="pic-selected-"$(date '+%y%m%d-%H%M-%S')""
+    # cp "/tmp/screenshot.png" "$current_dir/$pic_name.png"
+    maim -s "$current_dir/$pic_name.png"
+  ;;
+  'Copy')
+    maim -s | xclip -selection clipboard -t image/png
+  ;;
+
+esac
