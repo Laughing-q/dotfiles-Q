@@ -32,7 +32,8 @@ case "$target" in
     pic_name="$(echo "" | dmenu -p 'save name?')" || exit 1
     [[ -z $pic_name ]] && pic_name="pic-selected-"$(date '+%y%m%d-%H%M-%S')""
     # cp "/tmp/screenshot.png" "$current_dir/$pic_name.png"
-    maim -s "$current_dir/$pic_name.png"
+    maim -s -qd 0.5 "$current_dir/$pic_name.png"
+    notify-send "Save screenshot" "$current_dir/$pic_name.png"
   ;;
   'Save recently')
     # maim -s "/tmp/screenshot.png"
@@ -50,10 +51,12 @@ case "$target" in
     pic_name="$(echo "" | dmenu -p 'save name?')" || exit 1
     [[ -z $pic_name ]] && pic_name="pic-selected-"$(date '+%y%m%d-%H%M-%S')""
     # cp "/tmp/screenshot.png" "$current_dir/$pic_name.png"
-    maim -s "$current_dir/$pic_name.png"
+    maim -s -qd 0.5 "$current_dir/$pic_name.png"
+    notify-send "Save screenshot" "$current_dir/$pic_name.png"
   ;;
   'Copy')
-    maim -s | xclip -selection clipboard -t image/png
+    maim -s -qd 0.5 | xclip -selection clipboard -t image/png
+    notify-send "Save screenshot" "clipboard"
   ;;
 
 esac

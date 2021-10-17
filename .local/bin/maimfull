@@ -1,0 +1,23 @@
+#!/bin/sh
+modes=(
+"Full window"
+"Active window"
+)
+
+target=$(printf '%s\n' "${modes[@]}" | dmenu -i -l 2 -p 'Take screenshot of:' "$@") || exit 1
+
+save_dir="$HOME/Screenshots"
+
+[[ ! (-d "$save_dir") ]] && mkdir -p "$save_dir"
+path="$save_dir"/pic-full-"$(date '+%y%m%d-%H%M-%S').png"
+
+case "$target" in
+  'Full window')
+    maim -qd 0.5 "$path"
+    notify-send "Save screenshot" "$path"
+  ;;
+  'Active window')
+    maim -i -qd 0.5 "$(xdotool getactivewindow)" "$path"
+    notify-send "Save screenshot" "$path"
+  ;;
+esac
