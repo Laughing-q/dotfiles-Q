@@ -20,7 +20,7 @@ case "$target" in
   'Save new')
     # maim -s "/tmp/screenshot.png"
     current_dir="$(find $HOME -type d -user laughing | \
-      grep -v '\/\.' | dmenu -i -l 10 -p 'Which dir to save?')"
+      grep -v '\/\.' | dmenu -i -l 10 -p 'Which dir to save?')" || exit 1
     [[ -z $current_dir ]] && current_dir="$HOME"
 
     # get the line number
@@ -29,7 +29,7 @@ case "$target" in
     [[ ! (-z $nu) ]] && sed -i "$nu d" "$history"
     echo "$current_dir" >> "$history"
 
-    pic_name="$(dmenu -p 'save name?')"
+    pic_name="$(echo "" | dmenu -p 'save name?')" || exit 1
     [[ -z $pic_name ]] && pic_name="pic-selected-"$(date '+%y%m%d-%H%M-%S')""
     # cp "/tmp/screenshot.png" "$current_dir/$pic_name.png"
     maim -s "$current_dir/$pic_name.png"
@@ -37,7 +37,7 @@ case "$target" in
   'Save recently')
     # maim -s "/tmp/screenshot.png"
 
-    current_dir="$(tac "$history" | dmenu -i -l 10 -p 'Which dir to save?')"
+    current_dir="$(tac "$history" | dmenu -i -l 10 -p 'Which dir to save?')" || exit 1
     [[ -z $current_dir ]] && current_dir="$HOME"
     # get the line number
     nu="$(grep -n "$current_dir\$" "$history" | awk -F ":" '{print $1}')"
@@ -47,7 +47,7 @@ case "$target" in
     [[ ! (-z $nu) ]] && sed -i "$nu d" "$history"
     echo "$current_dir" >> "$history"
 
-    pic_name="$(dmenu -p 'save name?')"
+    pic_name="$(echo "" | dmenu -p 'save name?')" || exit 1
     [[ -z $pic_name ]] && pic_name="pic-selected-"$(date '+%y%m%d-%H%M-%S')""
     # cp "/tmp/screenshot.png" "$current_dir/$pic_name.png"
     maim -s "$current_dir/$pic_name.png"
