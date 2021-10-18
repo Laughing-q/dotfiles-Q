@@ -9,7 +9,7 @@ sudo pacman -S zathura
 sudo pacman -S zathura-pdf-mupdf
 
 # remove mouse when idle
-sudo pacman -S mouse
+sudo pacman -S unclutter
 
 # image viewer
 sudo pacman -S sxiv
@@ -17,7 +17,10 @@ sudo pacman -S sxiv
 # media viewer
 sudo pacman -S mpv
 
-screenshot tool
+# screenshot tool
 sudo pacman -S maim
+
+# set background
+sudo pacman -S xwallpaper
 
 ```
