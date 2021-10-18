@@ -16,12 +16,21 @@ history='/tmp/screenshot_history.txt'
   rm "$history" && \
   mv "$history.temp" "$history"
 
+default_dir="$HOME/Screenshots"
+[[ ! (-d "$default_dir") ]] && mkdir -p "$default_dir"
+
 case "$target" in
   'Save new')
     # maim -s "/tmp/screenshot.png"
-    current_dir="$(find $HOME -type d -user laughing | \
-      grep -v '\/\.' | dmenu -i -l 10 -p 'Which dir to save?')" || exit 1
-    [[ -z $current_dir ]] && current_dir="$HOME"
+    # this command may take a while time
+    # current_dir="$(find $HOME -type d -user laughing | \
+    #   grep -v '\/\.' | dmenu -i -l 10 -p 'Which dir to save?')" || exit 1
+    current_dir="$(echo "" | dmenu -p 'Which dir to save?')" || exit 1
+    [[ -z $current_dir ]] && current_dir="$default_dir" && \
+      notify-send "Take $default_dir as default save dir"
+
+    [[ ! (-d $current_dir) ]] && current_dir="$default_dir" && \
+      notify-send "$current_dir does not exist, take $default_dir as default save dir"
 
     # get the line number
     nu="$(grep -n "$current_dir\$" "$history" | awk -F ":" '{print $1}')"
