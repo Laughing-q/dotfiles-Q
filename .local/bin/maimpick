@@ -29,8 +29,9 @@ case "$target" in
     [[ -z $current_dir ]] && current_dir="$default_dir" && \
       notify-send "Take $default_dir as default save dir"
 
-    [[ ! (-d $current_dir) ]] && current_dir="$default_dir" && \
-      notify-send "$current_dir does not exist, take $default_dir as default save dir"
+    [[ ! (-d $current_dir) ]]  && \
+      notify-send "$current_dir does not exist, take $default_dir as default save dir" &&
+      current_dir="$default_dir"
 
     # get the line number
     nu="$(grep -n "$current_dir\$" "$history" | awk -F ":" '{print $1}')"
