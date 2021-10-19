@@ -12,10 +12,9 @@ dotconfig="./.config"
 [[ -d $bkconfig ]] && echo "backup dir $bkconfig existed, remove it." && rm -r "$bkconfig"
 mkdir -p $bkconfig
 
-for c in $configfile
-do
-  [[ -d "$homeconfig/$c" ]] && echo "backup $homeconfig/$c to $bkconfig/$c.bk" && cp -r "$homeconfig/$c" "$bkconfig/$c.bk" && rm -r "$homeconfig/$c"
+for c in $configfile; do
+	[[ -d "$homeconfig/$c" ]] && echo "backup $homeconfig/$c to $bkconfig/$c.bk" && cp -r "$homeconfig/$c" "$bkconfig/$c.bk" && rm -r "$homeconfig/$c"
 
-  [[ -d "$dotconfig/$c" ]] && echo "update $dotconfig/$c to $homeconfig/$c" && cp -r "$dotconfig/$c" "$homeconfig"
+	[[ -d "$dotconfig/$c" ]] && echo "update $dotconfig/$c to $homeconfig/$c" && cp -r "$dotconfig/$c" "$homeconfig"
 
 done

@@ -9,9 +9,8 @@ echo $text | grep -q '^\s*\S\+\s*$' && notify-send "$(fanyi "$text")" && exit 0
 # sed "s/'/\\\'/g": `'` -> `/'`, cause xargs needs escape `'`
 # sed "s/\s*#\s*//g": get rid of ` # `
 # awk 'ORS=NR?" ":"\n"{print}': multi line -> one line
-address="$(echo $text | sed "s/'/\\\'/g; s/\s*#\s*//g" | awk 'ORS=NR?" ":"\n"{print}'| xargs | sed 's/- //g;s/ /%20/g')"
+address="$(echo $text | sed "s/'/\\\'/g; s/\s*#\s*//g" | awk 'ORS=NR?" ":"\n"{print}' | xargs | sed 's/- //g;s/ /%20/g')"
 # echo $text
 # echo $address
 $BROWSER "https://fanyi.baidu.com/#en/zh/$address" --new-window
 # curl "https://fanyi.baidu.com/#en/zh/$address" > translate.html
-

@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # wal -i /home/laughing/Pictures/DT/0026.jpg > /dev/null &
-setbg /home/laughing/Pictures/DT/0223.jpg &
+# setbg /home/laughing/Pictures/DT/0223.jpg &
+setbg  &
 
 picom -b &
 unclutter &		# Remove mouse when idle

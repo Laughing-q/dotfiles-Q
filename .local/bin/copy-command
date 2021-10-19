@@ -5,14 +5,14 @@
 # trap 'rm "$tmpfile"' 0 1 15
 # sed -n "w $tmpfile"
 # sed -i 's/\x0//g' "$tmpfile"
-# 
+#
 # # find command prompt
 # base=$(grep "\S" "$tmpfile" | tail -n 1 | sed 's/^\s*//' | cut -d' ' -f1)  # (base)
-# 
+#
 # chosen="$(grep -F "$base" "$tmpfile" | sed '$ d' | tac | \
 #   dmenu -p "Copy which command?" -i -l 10 | \
 #   sed 's/[0-9]\+:[0-9]\+:[0-9]\+//g; s/✗//g')"
-# 
+#
 # if echo $chosen | grep -q "git:(\S\+)"; then
 #   command="$(echo $chosen | \
 #     awk -F " " '{for (i=5;i<=(NF);i++)printf("%s ", $i);print ""}')"
@@ -21,18 +21,17 @@
 #   command="$(echo $chosen | \
 #     awk -F " " '{for (i=4;i<=(NF);i++)printf("%s ", $i);print ""}')"
 # fi
-# 
+#
 # echo "$command" | xclip -selection clipboard
 
 HISTFILE="$HOME/.zsh_history"
 set -o history
 # history
 # history | awk -F ";" '{for (i=2;i<=(NF);i++)printf("%s ", $i);print ""}' | \
-#   tac | dmenu -p "Copy which command?" -l 30 | xclip -selection clipboard 
+#   tac | dmenu -p "Copy which command?" -l 30 | xclip -selection clipboard
 
 # ' number : number:0;command' -> keep
 # ' number : number:0;# command' -> abandon
 history | sed -n '/^\s*[0-9]\+\s*:\s*[0-9]\+:0;[^#]/p' | tac |
-  sed 's/^\s*[0-9]\+\s*:\s*[0-9]\+:0;//g' | \
-  dmenu -i -l 30 -p "Copy which command?" | xclip -selection clipboard
-
+	sed 's/^\s*[0-9]\+\s*:\s*[0-9]\+:0;//g' |
+	dmenu -i -l 30 -p "Copy which command?" | xclip -selection clipboard
