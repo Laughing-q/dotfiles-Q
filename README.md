@@ -23,4 +23,7 @@ sudo pacman -S maim
 # set background
 sudo pacman -S xwallpaper
 
+# for youtobe video download
+sudo pacman -S youtobe-dl
+
 ```
