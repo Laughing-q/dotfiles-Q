@@ -1,0 +1,21 @@
+#!/bin/sh
+
+[[ "$#" == 0 ]] && echo "please give a argument file..." && exit 1
+
+total=$#
+count=0
+for i in $@; do
+	path="$i"
+	echo "Cleaning $path..."
+	find "$path" -mindepth 2 -type f -exec mv -i '{}' "$path" ';'
+	# find "$path" -depth -type d -empty -exec rm -rv '{}' +
+  empty=$(find "$path" -depth -type d -empty)
+  while [[ -n "$empty" ]]; do
+    rm -rv $empty
+    empty=$(find "$path" -depth -type d -empty)
+  done
+	echo '-------------------------------------------'
+	count=$((count + 1))
+done
+
+echo "All cleaning finished!($count/$total)"
