@@ -1,6 +1,6 @@
 #!/bin/sh
 
-modes=(
+declare -a modes=(
 	"Save recently"
 	"Save new"
 	"Copy"
