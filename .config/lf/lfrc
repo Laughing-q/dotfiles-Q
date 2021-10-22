@@ -175,7 +175,8 @@ map <esc> clear
 map w
 
 # compress and extract
-map e extract
+# map e extract
+map e $ext $f
 map t push :tar<space>
 map Z push :zip<space>
 
