@@ -1,0 +1,16 @@
+#!/bin/sh
+
+keyword="$(echo "" | dmenu -p "What package do you want to search?")" || exit 1
+
+chosen="$(yay -Ss "$keyword" |
+	awk 'NR%2==1 {printf ("%s", $1)}; NR%2==0 {printf ("%s\n", $0)};' |
+	dmenu -l 30 -p "Which package you wanna chose?")" || exit 1
+package="$(echo $chosen | awk '{print $1}' | cut -d'/' -f2)"
+
+command="yay -S $package"
+
+echo $command | xclip -selection clipboard
+notify-send "Copy Installation command to clipboard."
+
+
+

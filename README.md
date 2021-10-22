@@ -26,4 +26,7 @@ sudo pacman -S xwallpaper
 # for youtobe video download
 sudo pacman -S youtobe-dl
 
+# for copy 
+yay -S xsel
+
 ```
