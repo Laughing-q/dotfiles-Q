@@ -29,4 +29,7 @@ sudo pacman -S youtobe-dl
 # for copy 
 yay -S xsel
 
+# for music player
+yay -S mpd mpc ncmpcpp
+
 ```

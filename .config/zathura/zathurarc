@@ -44,8 +44,8 @@ map t toggle_statusbar
 # map t toggle_inputbar
 # map t toggle_index
 
-# set default-bg                     "{background}"
-# set default-fg                     "{foreground}"
+set default-bg                     "{background}"
+set default-fg                     "{foreground}"
 # set statusbar-bg                   "{background}"
 # set statusbar-fg                   "{foreground}"
 # set inputbar-bg                    "{background}"
@@ -62,13 +62,14 @@ map t toggle_statusbar
 # set completion-fg                  "{color4}"
 # set completion-highlight-bg        "{color3}"
 # set completion-highlight-fg        "{color4}"
-set notification-error-bg       "#ff5555" # Red
-set notification-error-fg       "#f8f8f2" # Foreground
-set notification-warning-bg     "#ffb86c" # Orange
-set notification-warning-fg     "#44475a" # Selection
-set notification-bg             "#282a36" # Background
-set notification-fg             "#f8f8f2" # Foreground
 
+# set notification-error-bg       "#ff5555" # Red
+# set notification-error-fg       "#f8f8f2" # Foreground
+# set notification-warning-bg     "#ffb86c" # Orange
+# set notification-warning-fg     "#44475a" # Selection
+# set notification-bg             "#282a36" # Background
+# set notification-fg             "#f8f8f2" # Foreground
+# 
 set completion-bg               "#282a36" # Background
 set completion-fg               "#6272a4" # Comment
 set completion-group-bg         "#282a36" # Background
@@ -88,9 +89,9 @@ set statusbar-fg                "#f8f8f2" # Foreground
 
 set highlight-color             "#ffb86c" # Orange
 set highlight-active-color      "#ff79c6" # Pink
-
-set default-bg                  "#282a36" # Background
-set default-fg                  "#f8f8f2" # Foreground
+# 
+# set default-bg                  "#282a36" # Background
+# set default-fg                  "#f8f8f2" # Foreground
 
 set recolor-lightcolor             "#d6e7cb"
 set recolor-darkcolor              "#000000"

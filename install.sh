@@ -18,3 +18,7 @@ for c in $configfile; do
 	[[ -d "$dotconfig/$c" ]] && echo "update $dotconfig/$c to $homeconfig/$c" && cp -r "$dotconfig/$c" "$homeconfig"
 
 done
+
+[[ -d "$HOME/.config/mpd" ]] && 
+  touch "$HOME/.config/mpd/state" "$HOME/.config/mpd/pid" \
+  "$HOME/.config/mpd/log" "$HOME/.config/mpd/database"
