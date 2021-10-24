@@ -1,0 +1,8 @@
+#!/bin/sh
+
+for i; do
+	name="$(echo $i | cut -d '/' -f2)"
+	newpath="./newJacky/$name"
+	echo $newpath
+	ffmpeg -i "$i" -metadata artist="Jacky Cheung" "$newpath" &>/dev/null
+done
