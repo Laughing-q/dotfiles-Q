@@ -1,8 +1,19 @@
 #!/bin/sh
 
+
+# name-artist.mp3
+count=1
 for i; do
-	name="$(echo $i | cut -d '/' -f2)"
-	newpath="./newJacky/$name"
-	echo $newpath
-	ffmpeg -i "$i" -metadata artist="Jacky Cheung" "$newpath" &>/dev/null
+	pname="$(echo $i | cut -d '/' -f2)"
+	newpath="./newJacky/$pname"
+  name="${pname%.*}"
+  song="${name%-*}"
+  artist="${name#*-}"
+  # name="${pname%-*}"
+	# echo $song
+	# echo $artist
+	echo "($count/${#*})--$newpath"
+	count=$((count + 1))
+	ffmpeg -i "$i" -metadata artist="$artist" -metadata title="$song" "$newpath" &>/dev/null
+	# ffmpeg -i "$i" -metadata artist="Jacky Cheung" -metadata title="$name" "$newpath" &>/dev/null
 done
