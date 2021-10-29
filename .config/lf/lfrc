@@ -255,3 +255,6 @@ map P :link
 
 # bulk-rename
 map B bulk-rename
+
+# quit
+map Q quit
