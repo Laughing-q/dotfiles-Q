@@ -25,3 +25,4 @@
 - [https://www.wikiemoji.com/](https://www.wikiemoji.com/)
 - [https://getemoji.com/](https://getemoji.com/) 
 - [Luke Smith's emoji file](https://github.com/Laughing-q/dotfile-Q/blob/master/.local/share/emoji) 
+- [https://www.unicode.org/emoji/techindex.html](https://www.unicode.org/emoji/techindex.html)
