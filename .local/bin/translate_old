@@ -1,20 +1,9 @@
 #!/bin/sh
 
+# text="$(xclip -o)"
 text="$(xclip -o -selection clipboard)"
-# if there is a single word, use `fanyi`, and save results to file.
-file="$HOME/translate.txt"
-
-echo $text | grep -q '^\s*\S\+\S*$' &&
-	(
-		result="$(fanyi "$text")"
-		notify-send "$result"
-		echo "$result" | grep -q '\s*-\s\S' || exit 0
-		echo "$text" >>"$file"
-		echo "$result" | awk '/^ -/ {printf("   %s\n", $0)}' >>"$file"
-		# printf "\n" >>"$file"
-		echo "-------------------------------------------------------" >>"$file"
-		exit 0
-	) && exit 0
+# if there is a single word, use `fanyi`.
+echo $text | grep -q '^\s*\S\+\s*$' && notify-send "$(fanyi "$text")" && exit 0
 
 # if get a sentence, use browser to get `baidufanyi`.
 # sed "s/'/\\\'/g": `'` -> `/'`, cause xargs needs escape `'`
