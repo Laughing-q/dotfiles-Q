@@ -1,0 +1,30 @@
+#!/bin/sh
+file="$1"
+output="$2"
+
+# file="$HOME/translate.txt"
+# output="sorted.txt"
+
+[ -f "$output" ] && rm -v "$output"
+
+# remove repeated number
+# sed -i '/^[a-z]\+([0-9]\+)$/s/([0-9]\+)//g' $file
+sed -i '/^[a-z]\+(+)$/s/(+)//g' $file
+
+# add repeated words(with repeated number)
+repeated=$(grep '^[a-z]\+' $file | sort | uniq -dc | awk '{printf("%s(%i)\n", $2, $1)}')
+for i in $repeated; do
+  origin="$(echo $i | cut -d'(' -f1)"
+  # echo $origin
+  awk "/^$origin\$/{p=1;print;next} p&&/^--/{p=0;exit};p" $file >> "$output"
+  echo "-------------------------------------------------------" >> "$output"
+  # sed -i "/^$origin\$/s/$origin/$i/g" $output
+  sed -i "/^$origin\$/s/\$/(+)/" $output
+done
+
+sorted=$(grep '^[a-z]\+' $file | sort | uniq -u)
+# add the rest of words
+for i in $sorted; do
+  awk "/^$i\$/{p=1;print;next} p&&/^--/{p=0};p" $file >> "$output"
+  echo "-------------------------------------------------------" >> "$output"
+done
