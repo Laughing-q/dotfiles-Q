@@ -19,6 +19,7 @@
 
 ## Wallpapers
 - [wallpapers](https://github.com/Laughing-q/wallpapers)
+- [https://github.com/theniceboy/wallpapers](https://github.com/theniceboy/wallpapers)
 - [https://wallpapercave.com/](https://wallpapercave.com/)
 
 ## Emoji
