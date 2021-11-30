@@ -1,0 +1,6 @@
+#!/bin/sh
+
+while true; do
+  sleep $2
+  feh --recursive --randomize --bg-fill $1
+done

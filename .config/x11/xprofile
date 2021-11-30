@@ -2,6 +2,7 @@
 
 # wal -i /home/laughing/Pictures/DT/0026.jpg > /dev/null &
 # setbg /home/laughing/Pictures/DT/0223.jpg &
+wp-autochange ~/Pictures/wallpapers/ghibili 2m &
 setbg  &
 mpd &
 
