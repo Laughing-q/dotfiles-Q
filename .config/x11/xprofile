@@ -2,8 +2,10 @@
 
 # wal -i /home/laughing/Pictures/DT/0026.jpg > /dev/null &
 # setbg /home/laughing/Pictures/DT/0223.jpg &
-setbg  &
-wp-autochange ~/Pictures/ 2m &
+# setbg  &
+# wp-autochange ~/Pictures/ 2m &
+setbg-time  &
+wp-autochange-time 2m &
 mpd &
 
 picom -b &
