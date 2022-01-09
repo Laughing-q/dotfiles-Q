@@ -1,0 +1,22 @@
+#!/bin/bash
+
+for i; do
+	archive="$(readlink -f "$(echo "$i" | cut -d' ' -f2)" 2>/dev/null)"
+	case "$archive" in
+	*.tar.bz2 | *tbz2) ext $i ;;
+	*.tar.xz) ext $i ;;
+	*.tar.gz | *.tgz) ext $i ;;
+	*.tar.zst) ext $i ;;
+	*.tar) ext $i ;;
+	*.lzma) ext $i ;;
+  *.bz2) ext $i ;;
+	*.rar) ext $i ;;
+	*.gz) ext $i ;;
+	*.zip) ext $i ;;
+  *.Z) ext $i ;;
+	*.7z) ext $i ;;
+	*.xz) ext $i ;;
+	*.exe) ext $i ;;
+	*) printf "extract: '%s' - unknown archive method\\n" "$archive" ;;
+	esac
+done
