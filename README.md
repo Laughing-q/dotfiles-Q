@@ -36,5 +36,5 @@ yay -S mpd mpc ncmpcpp
 ## nvidia
 ```shell
 sudo pacman -S nvidia nvidia-utils nvidia-settings
-sudo pacman -S cuda
+sudo pacman -S cuda cudnn
 ```
