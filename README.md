@@ -36,5 +36,10 @@ yay -S mpd mpc ncmpcpp
 ## nvidia
 ```shell
 sudo pacman -S nvidia nvidia-utils nvidia-settings
+nvidia-sconfig
 sudo pacman -S cuda cudnn
 ```
+## Others
+- Chinese font
+- nert fonts(from git)
+- libxft-bgra(needed)
