@@ -24,7 +24,7 @@ sudo pacman -S maim
 sudo pacman -S xwallpaper
 
 # for youtobe video download
-sudo pacman -S youtobe-dl
+sudo pacman -S youtube-dl
 
 # for copy 
 yay -S xsel
