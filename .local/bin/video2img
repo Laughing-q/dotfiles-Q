@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -euo pipefail
+[[ "$#" == 0 ]] && echo "There is no args..." && exit 1
+
+total=$#
+# files=${@:1:$((total - 1))}
+imgdir="${@: -1}"
+[[ ! (-d "$imgdir") ]] && mkdir -p "$imgdir"
+count=0
+
+for i; do
+	[ "$i" == "$imgdir" ] && break
+	filename="${i##*/}"
+	imgname="${imgdir%/}/$filename-%03d.jpeg"
+	# echo $imgname
+	ffmpeg -i "$i" -r 1 -q:v 2 -f image2 "$imgname" >/dev/null 2>&1
+	count=$((count + 1))
+  echo $count
+done
