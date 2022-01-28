@@ -26,7 +26,9 @@ cmd open ${{
         audio/*) mpv --audio-display=no $f ;;
         video/*) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
         application/octet-stream) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
-        application/pdf|application/vnd*|application/epub*) setsid -f okular $fx >/dev/null 2>&1 ;;
+        # application/pdf|application/vnd*|application/epub*) setsid -f zathura $fx >/dev/null 2>&1 ;;
+        application/vnd.openxmlformats-officedocument.presentationml.presentation) setsid -f wpp $f >/dev/null 2>&1 ;;
+        application/vnd.openxmlformats-officedocument.wordprocessingml.document) setsid -f wps $f >/dev/null 2>&1 ;;
         application/pgp-encrypted) $EDITOR $fx ;;
         *) for f in $fx; do setsid -f $OPENER $f >/dev/null 2>&1; done;;
     esac
