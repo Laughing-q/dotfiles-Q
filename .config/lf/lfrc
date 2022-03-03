@@ -153,6 +153,12 @@ cmd bulk-rename ${{
     lf -remote "send $id unselect"
 }}
 
+cmd fzf_file ${{
+    file=$(fd --type=file -H -E ".git/*" | fzf --height ${FZF_TMUX_HEIGHT:-40%} --reverse --bind=ctrl-z:ignore)
+    [ ! -e "$file" ] && exit
+    nvim "$file"
+  }}
+
 
 # Keybindings
 map i up
@@ -212,8 +218,9 @@ cmd aj %lf -remote "send $id cd '$(autojump $1)'"
 map J push :aj<space>
 
 # fzf
-cmd fzf $nvim $(find . -name "$1" | fzf)
-map <c-f> push :fzf<space>
+# cmd fzf $nvim $(find . -name "$1" | fzf)
+# map <c-f> push :fzf<space>
+map <c-f> fzf_file
 
 # rename
 map A rename  # at the very end
@@ -252,7 +259,7 @@ map mr mark-remove
 # lazygit
 map <c-g> $lazygit
 
-# show media size
+# show media and file size
 map sw show-media-size
 map sd show-file-size
 
