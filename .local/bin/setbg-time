@@ -2,9 +2,9 @@
 
 time=$(date "+%k")
 if [[ $time -gt 7 && $time -lt 17 ]]; then
-  setbg "/home/laughing/Pictures/day/To the Woods.png"
+  setbg "/home/laughing/Pictures/day/base.jpg"
 elif [[ $time -gt 17 && $time -lt 19 ]]; then
-  setbg "/home/laughing/Pictures/nightfall/3JWY37f.jpg"
+  setbg "/home/laughing/Pictures/nightfall/base.jpg"
 else
-  setbg "/home/laughing/Pictures/night/3orREer.jpg"
+  setbg "/home/laughing/Pictures/night/base.jpg"
 fi
