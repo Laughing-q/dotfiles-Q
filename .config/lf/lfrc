@@ -154,9 +154,9 @@ cmd bulk-rename ${{
 }}
 
 cmd fzf_file ${{
-    file=$(fd --type=file -H -E ".git/*" | fzf --height ${FZF_TMUX_HEIGHT:-40%} --reverse --bind=ctrl-z:ignore)
+    file=$(fd --type=file -H -E ".git/*" | fzf --bind=ctrl-z:ignore)
     [ ! -e "$file" ] && exit
-    nvim "$file"
+    lf "$file"
   }}
 
 
@@ -257,8 +257,8 @@ map T push :$touch<space>
 
 # mark
 map m
-map mm mark-save
-map ml mark-load
+map ms mark-save
+map mm mark-load
 map mr mark-remove
 
 # lazygit
