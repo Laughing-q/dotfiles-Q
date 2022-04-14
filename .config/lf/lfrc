@@ -167,8 +167,8 @@ map j updir
 map l open
 
 # faster move
-map I push 5i
-map K push 5k
+# map I push 5i
+# map K push 5k
 
 # go dir
 map D delete
