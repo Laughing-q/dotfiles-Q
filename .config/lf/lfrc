@@ -111,7 +111,7 @@ cmd yank-basename-without-extension ${{
 
 cmd show-media-size %exiftool "$fx" | sed -n '/Image Size/p'
 cmd show-file-size %du --max-depth=0 -h "$fx"
-cmd show-images %sxiv -rt $fx
+cmd show-images %sxiv -rto $fx
 
 # y (select for copy) and P to paste soft-link
 # d (select for cut) and P to paste hard-link
