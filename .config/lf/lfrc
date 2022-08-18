@@ -49,6 +49,10 @@ cmd extract ${{
 # compress current file or selected files with tar and gunzip
 cmd tar ${{
     set -f
+    if [ -d "$fx" ]; then
+      tar czf $1.tar.gz ${fx##*/}
+      exit 0
+    fi
     mkdir $1
     cp -r $fx $1
     tar czf $1.tar.gz $1
@@ -58,6 +62,10 @@ cmd tar ${{
 # compress current file or selected files with zip
 cmd zip ${{
     set -f
+    if [ -d "$fx" ]; then
+      zip -r $1.zip ${fx##*/}
+      exit 0
+    fi
     mkdir $1
     cp -r $fx $1
     zip -r $1.zip $1
