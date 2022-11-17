@@ -8,7 +8,7 @@ setbg-time  &
 wp-autochange-time 2m &
 mpd &
 
-picom --experimental-backends -b &
+picom -b &
 unclutter &		# Remove mouse when idle
 
 fcitx &
