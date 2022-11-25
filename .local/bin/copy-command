@@ -25,7 +25,9 @@
 # echo "$command" | xclip -selection clipboard
 
 HISTFILE="$HOME/.zsh_history"
-set -o history
+# NOTE: this command makes this script work, but it'll clean the history!!!!
+# set -o history
+
 # history | awk -F ";" '{for (i=2;i<=(NF);i++)printf("%s ", $i);print ""}' | \
 #   tac | dmenu -p "Copy which command?" -l 30 | xclip -selection clipboard
 
