@@ -50,8 +50,8 @@ git:
   parseEmoji: false
 os:
   edit: 'nvim {{filename}}'
-  editAtLine: 'myeditor --line={{line}} {{filename}}'
-  editAtLineAndWait: 'myeditor --block --line={{line}} {{filename}}'
+  editAtLine: 'nvim --line={{line}} {{filename}}'
+  editAtLineAndWait: 'nvim --block --line={{line}} {{filename}}'
   editInTerminal: true
 refresher:
   refreshInterval: 10 # file/submodule refresh interval in seconds
