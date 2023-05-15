@@ -1,0 +1,2 @@
+#!/bin/bash
+du -h -d 1 "$1" | grep "^[0-9]\+.*G\s" | sort -n
