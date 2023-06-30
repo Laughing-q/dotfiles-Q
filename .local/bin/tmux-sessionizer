@@ -19,10 +19,15 @@ fi
 selected_name=$(basename "$selected" | tr . _)
 tmux_running=$(pgrep tmux)
 
+get_sessions() {
+	tmux list-sessions -F '#{session_last_attached} #{session_name}' #| sort --numeric-sort --reverse | awk '{print $2}'
+}
+
 if [[ -z $TMUX ]]; then          # not in tmux
-	if [[ -z $tmux_running ]]; then # there're sesstions exist
+  # there're no sesstions or selected_name is not in existed sessions, then create new session.
+	if [[ -z $tmux_running ]] || ! (get_sessions | grep -wq "$selected_name"); then 
 		tmux new-session -s $selected_name -c $selected
-	else
+  else
 		tmux attach -t "$selected_name"
 	fi
 	exit 0
