@@ -210,12 +210,6 @@ map gfg cd ~/.config/lazygit
 map gfl cd ~/.config/lf
 
 
-# search
-map = search-next
-map - search-prev
-map = find-next
-map - find-prev
-
 # system
 map S $ $SHELL
 map M push :mkdir<space>
@@ -239,10 +233,10 @@ map J push :aj<space>
 map <c-f> fzf_file
 
 # rename
-map A rename  # at the very end
-map a push A<a-b><a-b><a-f> # before extention
-map h push A<c-a>
-map c push A<c-u>
+map a rename  # before extention
+map A push a<c-e> # at the end
+map h push a<c-a> # at the beginning
+map c push a<c-e><c-u>
 
 # set bg
 map b $setbg $f
