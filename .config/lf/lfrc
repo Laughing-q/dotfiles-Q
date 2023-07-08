@@ -236,7 +236,8 @@ map <c-f> fzf_file
 map a rename  # before extention
 map A push a<c-e> # at the end
 map h push a<c-a> # at the beginning
-map c push a<c-e><c-u>
+map c push a<c-u>
+map C push a<c-e><c-u>
 
 # set bg
 map b $setbg $f
