@@ -13,3 +13,5 @@ unclutter &		# Remove mouse when idle
 
 fcitx &
 dunst &
+
+select_screen HDMI-1-0 && xrandr --output HDMI-1-0 --mode 2560x1440 --rate 144
