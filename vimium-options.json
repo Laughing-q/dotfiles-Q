@@ -1,5 +1,5 @@
 {
-  "settingsVersion": "1.67",
+  "settingsVersion": "1.67.7",
   "exclusionRules": [
     {
       "pattern": "https?://mail.google.com/*",
@@ -9,7 +9,7 @@
   "filterLinkHints": false,
   "waitForEnterForFilteredHints": true,
   "hideHud": false,
-  "keyMappings": "# Insert your preferred key mappings here.\nmap k scrollDown\nmap i scrollUp\nmap j scrollLeft\nmap l scrollRight\n\nmap h enterInsertMode\n\nmap J previousTab\nmap L nextTab\nmap K scrollFullPageDown\nmap I scrollFullPageUp",
+  "keyMappings": "# Insert your preferred key mappings here.\nmap k scrollDown\nmap i scrollUp\nmap j scrollLeft\nmap l scrollRight\n\nmap h enterInsertMode\nmap J goBack\n\nmap <a-j> previousTab\nmap <a-l> nextTab\nmap <c-d> scrollFullPageDown\nmap <c-u> scrollFullPageUp",
   "linkHintCharacters": "sadfjklewcmpgh",
   "linkHintNumbers": "0123456789",
   "newTabUrl": "about:newtab",
