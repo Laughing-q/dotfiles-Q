@@ -122,6 +122,7 @@ cmd yank-basename-without-extension ${{
 cmd show-media-size %exiftool "$fx" | sed -n '/Image Size/p'
 cmd show-file-size %du --max-depth=0 -h "$fx"
 cmd show-images %sxiv -rto $fx
+cmd show-file-numbers %ls $fx | wc -l
 
 # y (select for copy) and P to paste soft-link
 # d (select for cut) and P to paste hard-link
@@ -273,6 +274,7 @@ map <c-g> $lazygit
 # show media and file size
 map sw show-media-size
 map sd show-file-size
+map sn show-file-numbers
 map w show-images
 
 # link
