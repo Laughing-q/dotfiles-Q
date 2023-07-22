@@ -1,0 +1,8 @@
+#!/bin/sh
+
+default_dir="$HOME/Screenshots"
+[[ ! (-d "$default_dir") ]] && mkdir -p "$default_dir"
+
+pic_name="pic-"$(date '+%y%m%d-%H%M-%S')""
+maim -s -q "$default_dir/$pic_name.png" || exit 1
+notify-send "Save screenshot" "$default_dir/$pic_name.png"
