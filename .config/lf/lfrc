@@ -241,7 +241,7 @@ map c push a<c-u>
 map C push a<c-e><c-u>
 
 # set bg
-map b $setbg $f
+map B $setbg $f
 
 # yank
 map y
@@ -281,7 +281,7 @@ map w show-images
 map P :link
 
 # bulk-rename
-map B bulk-rename
+map b bulk-rename
 
 # quit
 map Q quit
