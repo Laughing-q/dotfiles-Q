@@ -148,9 +148,17 @@ cmd link %{{
 cmd bulk-rename ${{
     old="$(mktemp)"
     new="$(mktemp)"
-    [ -n "$fs" ] && fs="$(ls)"
-    printf '%s\n' "$fs" >"$old"
-    printf '%s\n' "$fs" >"$new"
+    [ -z "$fs" ] && fs="$(ls)"
+    # use filename instead of full-path
+    filenames=""
+    for i in $fs;
+      do filenames+="${i##*/}$IFS"
+    done
+    # remove the last $IFS
+    filenames=${filenames%$IFS}
+
+    printf '%s\n' "$filenames" >"$old"
+    printf '%s\n' "$filenames" >"$new"
     $EDITOR "$new"
     [ "$(wc -l < "$new")" -ne "$(wc -l < "$old")" ] && exit
     paste "$old" "$new" | while IFS= read -r names; do
