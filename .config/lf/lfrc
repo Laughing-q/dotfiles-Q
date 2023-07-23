@@ -95,9 +95,9 @@ cmd zip ${{
 cmd mkdir $mkdir -p "$(echo $* | tr ' ' '\ ')"
 
 # yank
-cmd yank-dirname $dirname -- "$f" | head -c-1 | xclip -i -selection clipboard
-cmd yank-path $printf '%s' "$fx" | xclip -i -selection clipboard
-cmd yank-basename $basename -a -- $fx | head -c-1 | xclip -i -selection clipboard
+cmd yank-dirname $dirname -- "$f" | head -c-1 | xsel -i -b
+cmd yank-path $printf '%s' "$fx" | xsel -i -b
+cmd yank-basename $basename -a -- $fx | head -c-1 | xsel -i -b
 
 cmd yank-basename-without-extension ${{
     echo "$fx" |
@@ -116,7 +116,7 @@ cmd yank-basename-without-extension ${{
           print $0
       }' |
       if [ -n "$fs" ]; then cat; else tr -d '\n'; fi |
-      xclip -i -selection clipboard
+      xsel -i -b
 }}
 
 cmd show-media-size %exiftool "$fx" | sed -n '/Image Size/p'
