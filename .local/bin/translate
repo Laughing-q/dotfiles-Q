@@ -1,6 +1,6 @@
 #!/bin/sh
 
-text="$(xclip -o -selection clipboard)"
+text="$(xsel -o -b)"
 # if there is a single word, use `fanyi`, and save results to file.
 file="$HOME/translate.txt"
 

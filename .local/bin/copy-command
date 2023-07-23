@@ -25,7 +25,7 @@
 # echo "$command" | xclip -selection clipboard
 
 HISTFILE="$HOME/.zsh_history"
-[ -f $HISTFILE ] && sed -n '/^:/!p' $HISTFILE | tac | dmenu -i -l 30 -p "Copy which command?" | xclip -selection clipboard
+[ -f $HISTFILE ] && sed -n '/^:/!p' $HISTFILE | tac | dmenu -i -l 30 -p "Copy which command?" | xsel -i -b
 
 # NOTE: this command makes this script work, but it'll clean the history!!!!
 # set -o history

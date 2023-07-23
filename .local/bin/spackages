@@ -9,5 +9,6 @@ package="$(echo $chosen | awk '{print $1}' | cut -d'/' -f2)"
 
 command="yay -S $package"
 
-echo $command | xclip -selection clipboard
+# echo $command | xclip -selection clipboard
+echo $command | xsel -i -b
 notify-send "Copy Installation command to clipboard."

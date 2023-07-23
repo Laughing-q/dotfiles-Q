@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # text="$(xclip -o)"
-text="$(xclip -o -selection clipboard)"
+text="$(xsel -o -b)"
 # if there is a single word, use `fanyi`.
 echo $text | grep -q '^\s*\S\+\s*$' && notify-send "$(fanyi "$text")" && exit 0
 

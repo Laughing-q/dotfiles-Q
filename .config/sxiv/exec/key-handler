@@ -23,11 +23,11 @@ while read -r file; do
 		convert -flop "$file" "$file"
 		;;
 	"y")
-		printf "%s" "$file" | tr -d '\n' | xclip -selection clipboard &&
+		printf "%s" "$file" | tr -d '\n' | xsel -i -b &&
 			notify-send "$file copied to clipboard" &
 		;;
 	"Y")
-		readlink -f "$file" | tr -d '\n' | xclip -selection clipboard &&
+		readlink -f "$file" | tr -d '\n' | xsel -i -b &&
 			notify-send "$(readlink -f "$file") copied to clipboard" &
 		;;
 	"d")
