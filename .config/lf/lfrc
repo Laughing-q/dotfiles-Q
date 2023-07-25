@@ -206,6 +206,8 @@ map grp cd ~/reading/papers
 map gD cd ~/Desktop
 map gd cd ~/Downloads
 map gv cd ~/Videos
+map gs cd ~/Screenshots
+
 map gfe cd /e
 map gfd cd /d
 map gfa cd ~/.config/alacritty
