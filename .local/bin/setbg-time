@@ -1,10 +1,8 @@
 #!/bin/sh
 
 time=$(date "+%k")
-if [[ $time -gt 7 && $time -lt 17 ]]; then
+if [[ $time -gt 7 && $time -lt 19 ]]; then
   setbg "/home/laughing/Pictures/day/base.jpg"
-elif [[ $time -gt 17 && $time -lt 19 ]]; then
-  setbg "/home/laughing/Pictures/nightfall/base.jpg"
 else
   setbg "/home/laughing/Pictures/night/base.jpg"
 fi

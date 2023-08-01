@@ -3,12 +3,9 @@
 while true; do
 	sleep $1
 	time=$(date "+%k")
-	if [[ $time -gt 7 && $time -lt 17 ]]; then
+	if [[ $time -gt 7 && $time -lt 19 ]]; then
 		# echo $time
-		wp-change "/home/laughing/Pictures/day"
-	elif [[ $time -gt 17 && $time -lt 19 ]]; then
-		# echo $time
-		wp-change "/home/laughing/Pictures/nightfall"
+		wp-change "/home/laughing/Pictures/"
 	else
 		# echo $time
 		wp-change "/home/laughing/Pictures/night"
