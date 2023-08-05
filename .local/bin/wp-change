@@ -1,3 +1,9 @@
 #!/bin/sh
 
-feh --recursive --randomize --bg-fill $1
+# feh --recursive --randomize --bg-fill $1
+im="$1"
+# filter image files if it's a directory
+[ -d "$1" ] && im="$(fd . "$1" -t f -e jpg -e png -e jpeg | shuf -n 1)"
+# link the image to bg to keep trace
+bgloc="$HOME/.local/share/bg"
+[ -f "$im" ] && feh --recursive --randomize --bg-fill "$im" && ln -sf "$(readlink -f "$im")" "$bgloc"

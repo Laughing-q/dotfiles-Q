@@ -2,5 +2,5 @@
 
 while true; do
   sleep $2
-  feh --recursive --randomize --bg-fill $1
+  wp-change $1
 done
