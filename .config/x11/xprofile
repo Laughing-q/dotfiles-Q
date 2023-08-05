@@ -6,7 +6,7 @@
 # wp-autochange ~/Pictures/ 2m &
 setbg-time  &
 wp-autochange-time 2m &
-mpd &
+# mpd &   # music backend
 
 picom -b &
 unclutter &		# Remove mouse when idle
