@@ -2,6 +2,8 @@
 # Find subtitles before open mpv 
 
 sub_file=""
+# file=$(realpath "$1")
+# dir="${file%/*}"
 sub_files="$(fd -t f -e srt -e ass)"
 [[ -n $sub_files ]] && sub_file="$(fd -t f -e srt -e ass | fzf)"
 if [[ -n $sub_file ]]; then
