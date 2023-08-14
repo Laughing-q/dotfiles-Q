@@ -1,4 +1,5 @@
 #!/bin/bash
+# Find subtitles before open mpv 
 
 sub_file=""
 sub_files="$(fd -t f -e srt -e ass)"
