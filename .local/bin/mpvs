@@ -1,0 +1,10 @@
+#!/bin/bash
+
+sub_file=""
+sub_files="$(fd -t f -e srt -e ass)"
+[[ -n $sub_files ]] && sub_file="$(fd -t f -e srt -e ass | fzf)"
+if [[ -n $sub_file ]]; then
+	mpv "$1" --sub-file="$sub_file"
+else
+  mpv "$1"
+fi
