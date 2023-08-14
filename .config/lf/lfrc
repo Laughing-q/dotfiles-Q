@@ -33,6 +33,8 @@ cmd open ${{
         application/vnd.openxmlformats-officedocument.presentationml.presentation) setsid -f wpp $f >/dev/null 2>&1 ;;
         application/vnd.openxmlformats-officedocument.wordprocessingml.document) setsid -f wps $f >/dev/null 2>&1 ;;
         application/pgp-encrypted) $EDITOR $f ;;
+        application/json) $EDITOR $f ;;
+        inode/x-empty) $EDITOR $f ;;
         *) for f in $fx; do setsid -f $OPENER $f >/dev/null 2>&1; done;;
     esac
 }}
