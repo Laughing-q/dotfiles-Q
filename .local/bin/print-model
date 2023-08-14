@@ -1,0 +1,4 @@
+#!/bin/bash
+
+temp_file="/tmp/model.temp"
+model_info "$1" > "$temp_file" && $EDITOR "$temp_file"

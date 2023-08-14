@@ -28,7 +28,7 @@ cmd open ${{
         # video/*) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
         # video/*) mpv $f -quiet >/dev/null 2>&1 ;;  # swallow version
         video/*) mpvs $f -quiet ;;  # swallow version
-        application/octet-stream) setsid -f mpv $f -quiet >/dev/null 2>&1 ;;
+        application/octet-stream) octet-opener $f ;;
         # application/pdf|application/vnd*|application/epub*) setsid -f zathura $f >/dev/null 2>&1 ;;
         application/vnd.openxmlformats-officedocument.presentationml.presentation) setsid -f wpp $f >/dev/null 2>&1 ;;
         application/vnd.openxmlformats-officedocument.wordprocessingml.document) setsid -f wps $f >/dev/null 2>&1 ;;

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# /d/dataset/服务区/服务区视频/2、西区2号立杆球机36_1677055561_188CB5F7/2、西区2号立杆球机36_247C5148_1677055561_1.mp4
+case "$1" in
+  *.mp4) setsid -f mpv "$1" -quiet >/dev/null 2>&1 ;;
+  *.encrypted) print-model "$1" ;;
+esac
