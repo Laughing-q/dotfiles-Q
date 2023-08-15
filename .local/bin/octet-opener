@@ -7,5 +7,5 @@ print_model() {
 
 case "$1" in
 *.mp4) setsid -f mpv "$1" -quiet >/dev/null 2>&1 ;;
-*.encrypted) print-model "$1" ;;
+*.encrypted) print_model "$1" ;;
 esac
