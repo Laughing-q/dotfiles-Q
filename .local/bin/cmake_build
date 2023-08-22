@@ -1,0 +1,22 @@
+#!/bin/bash
+# build in a new directory if the directory exists, like `increment_path` function in ultralytics.
+# usage:
+#   cmake_build src_dir dst_dir
+#   example:
+#     cmake_build . build
+
+increment_path() {
+	if [[ -d "$1" ]]; then
+		for ((i = 2; i < 100; i = i + 1)); do
+			# echo "$1$i"
+			[[ ! -d "$1$i" ]] && mkdir -p "$1$i" && break
+		done
+    echo "$1$i"
+	else
+		mkdir -p "$1"
+    echo "$1"
+	fi
+}
+
+build_path=$(increment_path "$2")
+cmake -S "$1" -B "$build_path"
