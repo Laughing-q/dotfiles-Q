@@ -19,4 +19,4 @@ increment_path() {
 }
 
 build_path=$(increment_path "$2")
-cmake -S "$1" -B "$build_path"
+cmake -S "$1" -B "$build_path" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
