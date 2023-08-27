@@ -19,4 +19,5 @@ increment_path() {
 }
 
 build_path=$(increment_path "$2")
-cmake -S "$1" -B "$build_path"
+threads="$(grep "processor" /proc/cpuinfo | sort -u | wc -l)"
+cmake -S "$1" -B "$build_path" && make -C "$build_path" -j"$threads"
