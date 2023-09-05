@@ -26,7 +26,7 @@ get_sessions() {
 if [[ -z $TMUX ]]; then          # not in tmux
   # there're no sesstions or selected_name is not in existed sessions, then create new session.
 	if [[ -z $tmux_running ]] || ! (get_sessions | grep -wq "$selected_name"); then 
-		tmux new-session -s $selected_name -c $selected
+		tmux new-session -s $selected_name -c $selected -n $selected_name
   else
 		tmux attach -t "$selected_name"
 	fi
@@ -34,7 +34,7 @@ if [[ -z $TMUX ]]; then          # not in tmux
 fi
 
 if ! tmux has-session -t=$selected_name 2>/dev/null; then
-	tmux new-session -ds $selected_name -c $selected
+	tmux new-session -ds $selected_name -c $selected -n $selected_name
 fi
 
 tmux switch-client -t $selected_name
