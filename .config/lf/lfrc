@@ -18,7 +18,7 @@ cmd open ${{
     case $(file --mime-type $f -b) in
         image/vnd.djvu|application/pdf) setsid -f zathura $f >/dev/null 2>&1 ;;
         # image/vnd.djvu|application/pdf|application/octet-stream) setsid -f okular $f >/dev/null 2>&1 ;;
-        text/*) $EDITOR $f;;
+        text/* | application/json | application/javascript | application/pgp-encrypted | inode/x-empty) $EDITOR $f;;
         image/x-xcf) setsid -f gimp $f >/dev/null 2>&1 ;;
         image/svg+xml) display -- $f ;;
         image/*) rotdir $f | grep -i "\.\(png\|jpg\|jpeg\|gif\|webp\|tif\|ico\)\(_large\)*$" | setsid -f sxiv -aio 2>/dev/null | lf-select & ;;
@@ -32,9 +32,6 @@ cmd open ${{
         # application/pdf|application/vnd*|application/epub*) setsid -f zathura $f >/dev/null 2>&1 ;;
         application/vnd.openxmlformats-officedocument.presentationml.presentation) setsid -f wpp $f >/dev/null 2>&1 ;;
         application/vnd.openxmlformats-officedocument.wordprocessingml.document) setsid -f wps $f >/dev/null 2>&1 ;;
-        application/pgp-encrypted) $EDITOR $f ;;
-        application/json) $EDITOR $f ;;
-        inode/x-empty) $EDITOR $f ;;
         *) for f in $fx; do setsid -f $OPENER $f >/dev/null 2>&1; done;;
     esac
 }}
