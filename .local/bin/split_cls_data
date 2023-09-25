@@ -1,0 +1,39 @@
+#!/bin/bash
+
+data_root="$1"
+train_dir="$data_root/train"
+val_dir="$data_root/val"
+
+[ -d "$data_root" ] || exit 1;
+[ -d "$train_dir" ] && echo "$train_dir exits!" && exit 1
+[ -d "$val_dir" ] && echo "$val_dir exits!" && exit 1
+mkdir "$train_dir"
+mkdir "$val_dir"
+
+for dir in "$data_root"/*; do
+  if [[ "$dir" == "$train_dir" || "$dir" == "$val_dir" ]]; then
+    continue
+  fi
+  name=$(basename "$dir")
+  echo "$name"
+
+  train_dir_sub="$train_dir/$name"
+  val_dir_sub="$val_dir/$name"
+  mkdir "$train_dir_sub"
+  mkdir "$val_dir_sub"
+
+  l=$(ls "$dir" | wc -l)
+  # select the 80% images as train set
+  ((l*=4))
+  ((l/=5))
+  find "$dir" -type f | shuf -n "$l" | xargs -i mv "{}" "$train_dir_sub"
+  # move the rest to val set
+  find "$dir" -type f | xargs -i mv "{}" "$val_dir_sub"
+done
+
+# l=$(ls "test_dir" | wc -l)
+# echo $l
+# echo $((l*4/5))
+# ((l*=4))
+# ((l/=5))
+# echo $l
