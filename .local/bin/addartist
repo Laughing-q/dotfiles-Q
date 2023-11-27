@@ -1,17 +1,19 @@
-#!/bin/sh
+#!/bin/bash
 
 
 # name-artist.mp3
+save_dir="./newJacky"
+[[ ! -d "$save_dir" ]] && mkdir -p "$save_dir"
+
 count=1
 for i; do
-	pname="$(echo $i | cut -d '/' -f2)"
-	newpath="./newJacky/$pname"
+	pname="$(basename $i)"
   name="${pname%.*}"
   song="${name%-*}"
   artist="${name#*-}"
-  # name="${pname%-*}"
-	# echo $song
-	# echo $artist
+
+  newpath="$save_dir/$name.mp3"
+
 	echo "($count/${#*})--$newpath"
 	count=$((count + 1))
 	ffmpeg -i "$i" -metadata artist="$artist" -metadata title="$song" "$newpath" &>/dev/null
