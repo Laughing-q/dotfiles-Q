@@ -15,9 +15,10 @@ wmpid(){ # This function is needed if there are multiple instances of the window
 }
 
 # case "$(printf "🔒 lock\n🚪 leave $WM\n♻️ renew $WM\n🐻 hibernate\n🔃 reboot\n🖥️shutdown\n💤 sleep\n📺 display off" | dmenu -i -p 'Action: ')" in
-case "$(printf "🚪 leave $WM\n♻️ renew $WM\n🔃 reboot\n🖥️shutdown\n📺 display off" | dmenu -i -p 'Action: ')" in
+case "$(printf "🔒 lock\n🚪 leave $WM\n♻️ renew $WM\n🔃 reboot\n🖥️shutdown\n📺 display off" | dmenu -i -p 'Action: ')" in
 	"🚪 leave $WM") kill -TERM "$(wmpid)" ;;
 	"♻️ renew $WM") kill -HUP "$(wmpid)" ;;
+	'🔒 lock') betterlockscreen -l ;;
 	# '🔒 lock') slock ;;
 	# '🐻 hibernate') slock $ctl hibernate -i ;;
 	# '💤 sleep') slock $ctl suspend -i ;;
