@@ -5,4 +5,5 @@ default_dir="$HOME/Screenshots"
 
 pic_name="pic-"$(date '+%y%m%d-%H%M-%S')""
 maim -s -q "$default_dir/$pic_name.png" || exit 1
+echo "$default_dir/$pic_name.png" | xclip -selection clipboard
 notify-send "Save screenshot" "$default_dir/$pic_name.png"
