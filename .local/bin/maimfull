@@ -14,10 +14,12 @@ path="$save_dir"/pic-full-"$(date '+%y%m%d-%H%M-%S').png"
 case "$target" in
 'Full window')
 	maim -qd 0.5 "$path"
+  echo "$path" | xsel -i -b --trim
 	notify-send "Save screenshot" "$path"
 	;;
 'Active window')
 	maim -qd 0.5 -i "$(xdotool getactivewindow)" "$path"
+  echo "$path" | xsel -i -b --trim
 	notify-send "Save screenshot" "$path"
 	;;
 esac
