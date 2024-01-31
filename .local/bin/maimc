@@ -1,0 +1,4 @@
+#!/bin/sh
+
+maim -s -q | xclip -selection clipboard -t image/png || exit 1
+notify-send "Save screenshot" "clipboard"
