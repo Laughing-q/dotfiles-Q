@@ -295,3 +295,14 @@ map b bulk-rename
 
 # quit
 map Q quit
+
+# map <a-h> ${{
+# 	clear
+# 	cmd=$(
+# 		lf -remote "query $id history" |
+# 		awk -F'\t' 'NR > 1 { print $NF}' |
+# 		sort -u |
+# 		fzf --reverse --prompt='Execute command: '
+# 	)
+# 	lf -remote "send $id $cmd"
+# }}
