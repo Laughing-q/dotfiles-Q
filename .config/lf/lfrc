@@ -176,7 +176,7 @@ cmd bulk-rename ${{
 cmd fzf_file ${{
     file=$(fd --type=file -H -E ".git/*" | fzf --bind=ctrl-z:ignore)
     [ ! -e "$file" ] && exit
-    lf "$file"
+    lf -remote "send $id select $file"
   }}
 
 
