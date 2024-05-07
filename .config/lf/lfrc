@@ -10,8 +10,14 @@ set hiddenfiles .*:__pycache__:*.pyc
 # Vars that depend on environmental variables
 # $lf -remote "send $id set previewer ${XDG_CONFIG_HOME:-$HOME/.config}/lf/scope"
 # set previewer ~/.config/lf/previewr.sh
-set previewer ~/.config/lf/scope
-set cleaner ~/.config/lf/clear_img.sh
+# set previewer ~/.config/lf/scope
+# set cleaner ~/.config/lf/clear_img.sh
+
+# use ctpv which is designed for lf and more native to lf
+set previewer ctpv
+set cleaner ctpvclear
+&ctpv -s $id
+&ctpvquit $id
 
 # cmds/functions
 cmd open ${{
