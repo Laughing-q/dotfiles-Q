@@ -204,8 +204,9 @@ map D delete
 # map gpd cd /d/projects/data_tools
 # map gps cd /d/projects/StudyCode
 
-map gpp cd /d/codes
-map gpc cd ~/codes
+map gpp cd ~/codes
+map gpu cd ~/codes/ultralytics
+map gu cd ~/codes/uscripts
 map grb cd ~/reading/books
 map grp cd ~/reading/papers
 
