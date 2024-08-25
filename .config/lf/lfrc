@@ -215,8 +215,9 @@ map gd cd ~/Downloads
 map gv cd ~/Videos
 map gs cd ~/Screenshots
 
-map gfe cd /e
-map gfd cd /d
+# map gfe cd /e
+# map gfd cd /d
+map gfd cd ~/codes/datasets
 map gfa cd ~/.config/alacritty
 map gff cd ~/.config
 map gfr cd ~/.config/ranger
