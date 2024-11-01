@@ -40,5 +40,5 @@ fi
 # tmux switch-client -t $selected_name
 
 # NOTE:create a new window if it's in tmux
-tmux list-windows | grep -q "$selected_name" || tmux new-window -n $selected_name -c $selected
+tmux list-windows | grep -qw "$selected_name" || tmux new-window -n $selected_name -c $selected
 tmux select-window -t $selected_name
