@@ -12,8 +12,12 @@ else
 	)
 fi
 
-if [[ -z $selected ]]; then
+if [[ -z "$selected" ]]; then
 	exit 0
+fi
+
+if [[ -d "$selected" ]]; then
+  zoxide add "$selected"
 fi
 
 selected_name=$(basename "$selected" | tr . _)
