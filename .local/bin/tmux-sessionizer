@@ -5,8 +5,8 @@ if [[ $# -eq 1 ]]; then
 else
 	# selected=$(find ~/codes -mindepth 1 -maxdepth 1 -type d | fzf --height ${FZF_TMUX_HEIGHT:-40%} --reverse --bind=ctrl-z:ignore)
 	selected=$(
-		cat "$HOME/.local/share/autojump/autojump.txt" | sort -n | awk '{print $2}' | tac | fzf \
-			--height ${FZF_TMUX_HEIGHT:-40%} --reverse --bind=ctrl-z:ignore \
+		# cat "$HOME/.local/share/autojump/autojump.txt" | sort -n | awk '{print $2}' | tac | fzf \
+		zoxide query -l | fzf --height ${FZF_TMUX_HEIGHT:-40%} --reverse --bind=ctrl-z:ignore \
 			--border --prompt "Tmux Session: "
 		# --header "Tmux Session"
 	)
@@ -23,11 +23,11 @@ get_sessions() {
 	tmux list-sessions -F '#{session_last_attached} #{session_name}' #| sort --numeric-sort --reverse | awk '{print $2}'
 }
 
-if [[ -z $TMUX ]]; then          # not in tmux
-  # there're no sesstions or selected_name is not in existed sessions, then create new session.
-	if [[ -z $tmux_running ]] || ! (get_sessions | grep -wq "$selected_name"); then 
+if [[ -z $TMUX ]]; then # not in tmux
+	# there're no sesstions or selected_name is not in existed sessions, then create new session.
+	if [[ -z $tmux_running ]] || ! (get_sessions | grep -wq "$selected_name"); then
 		tmux new-session -s $selected_name -c $selected -n $selected_name
-  else
+	else
 		tmux attach -t "$selected_name"
 	fi
 	exit 0
