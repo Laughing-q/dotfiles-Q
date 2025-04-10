@@ -6,11 +6,7 @@ else
 	. "$HOME/.xprofile"
 fi
 
-if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/x11/xmodmap" ]; then
-	xmodmap "${XDG_CONFIG_HOME:-$HOME/.config}/x11/xmodmap"
-else
-	xmodmap "$HOME/.xprofile"
-fi
+setxkbmap -option caps:swapescape
 
 exec dwm
 # ssh-agent dwm
