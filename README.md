@@ -43,5 +43,3 @@ sudo pacman -S cuda cudnn
 - Chinese font
 - nert fonts(from git)
 - libxft-bgra(needed)
-
-
