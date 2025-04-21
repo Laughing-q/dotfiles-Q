@@ -49,3 +49,13 @@ done
 [[ -d "$HOME/.config/mpd" ]] &&
 	touch "$HOME/.config/mpd/state" "$HOME/.config/mpd/pid" \
 		"$HOME/.config/mpd/log" "$HOME/.config/mpd/database"
+
+declare -A custom_files
+custom_files["./.local/share/emoji"]="$HOME/.local/share/emoji"
+custom_files["./.zpofile"]="$HOME/.zprofile"
+
+for file in "${!custom_files[@]}"; do
+  if [[ ! -f ${custom_files[$file]} ]]; then
+    cp "$file" ${custom_files[$file]} && echo "Copy ${file##*./} file!"
+  fi
+done
