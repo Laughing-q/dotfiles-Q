@@ -1,5 +1,15 @@
 {
-  "keyMappings": "# Insert your preferred key mappings here.\nmap k scrollDown\nmap i scrollUp\nmap j scrollLeft\nmap l scrollRight\n\nmap h enterInsertMode\nmap J goBack\n\nmap <a-j> previousTab\nmap <a-l> nextTab\nmap <c-d> scrollFullPageDown\nmap <c-u> scrollFullPageUp\n\nmap M Marks.activateGotoMode",
+  "keyMappings": "# Insert your preferred key mappings here.\nmap k scrollDown\nmap i scrollUp\nmap j scrollLeft\nmap l scrollRight\n\nmap h enterInsertMode\nmap J goBack\n\nmap <a-j> previousTab\nmap <a-l> nextTab\nmap <c-d> scrollFullPageDown\nmap <c-u> scrollFullPageUp\nmap <a-tab> visitPreviousTab\n\nmap M Marks.activateGotoMode",
   "searchEngines": "w: https://www.wikipedia.org/w/index.php?title=Special:Search&search=%s Wikipedia\n\n# More examples.\n#\n# (Vimium supports search completion Wikipedia, as\n# above, and for these.)\n#\n# g: https://www.google.com/search?q=%s Google\n# l: https://www.google.com/search?q=%s&btnI I'm feeling lucky...\n# y: https://www.youtube.com/results?search_query=%s Youtube\n# gm: https://www.google.com/maps?q=%s Google maps\n# b: https://www.bing.com/search?q=%s Bing\n# d: https://duckduckgo.com/?q=%s DuckDuckGo\n# az: https://www.amazon.com/s/?field-keywords=%s Amazon\n# qw: https://www.qwant.com/?q=%s Qwant",
-  "settingsVersion": "2.1.2"
+  "settingsVersion": "2.3",
+  "exclusionRules": [
+    {
+      "passKeys": "",
+      "pattern": "https?://36.103.218.242:3111/*"
+    },
+    {
+      "passKeys": "",
+      "pattern": "https?://36.103.237.247:3111/*"
+    }
+  ]
 }
