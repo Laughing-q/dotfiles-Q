@@ -79,7 +79,9 @@ turn-begin)
 	[ -n "$win" ] || exit 0
 	origin=$(json_str origin_kind)
 	kind=run
-	[ "$origin" = "system_trigger" ] && kind=bg
+	# cron-fired turns report origin_kind=cron_job; system covers other
+	# non-interactive triggers (verified empirically, docs list neither)
+	case "$origin" in system_trigger | cron_job) kind=bg ;; esac
 	printf '%s %s\n' "$kind" "$win" >"$STATE_DIR/$session_id"
 	adjust "$(opt_for_kind "$kind")" 1 "$win"
 	;;
