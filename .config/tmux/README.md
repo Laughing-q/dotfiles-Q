@@ -7,20 +7,25 @@ one project), driven by Kimi Code hooks:
 - orange `●` — an agent turn is running in that window
 - green `●` — a turn finished and that *session* hasn't been reviewed since.
   Tracked per session (`@kimi_done` holds session ids), so checking one agent
-  never clears another's dot. Clears only by: focusing that agent's terminal
-  buffer (`~/.config/nvim/lua/lq/configs/agents.lua` calls `kimi-tmux-status.sh
-  seen <session_id>` on WinEnter/BufEnter), sending it a new turn, or the
-  session exiting. Plain window selection does *not* clear it; agents running
-  outside the nvim manager clear on their next turn or via `clear`
-- blue `●` — background task(s) or cron-fired turns running
+  never clears another's dot. Clears only by reviewing that agent: focusing its
+  terminal buffer in nvim (`~/.config/nvim/lua/lq/configs/agents.lua` calls
+  `kimi-tmux-status.sh seen <session_id>` on WinEnter/BufEnter), selecting the
+  window of an agent running directly in a pane (the `after-select-window` hook
+  calls `seen-window`, which only clears agents whose pane foreground is the
+  kimi CLI itself), sending it a new turn, or the session exiting. A CLI-in-pane
+  session that finishes while you are already watching it is not marked at all
+- blue `●` — background task(s) or cron-fired turns running. The counter is
+  reconciled against the session's task files on every turn end, because
+  stopped/killed tasks emit no Notification and would otherwise leak until the
+  session exits
 - states stack; counters handle multiple agents per window
 
 Files:
 
 - `kimi-tmux-status.sh` — hook handler; stores state in per-window options
   `@kimi_run` / `@kimi_done` / `@kimi_bg` via `$TMUX_PANE` (no jq needed)
-- `.tmux.conf` — `window-status-format` renders the icons (no tmux hooks; all
-  state changes flow through the script)
+- `.tmux.conf` — `window-status-format` renders the icons; `after-select-window`
+  hook clears the green of agents visible directly in a pane
 
 Requires these `[[hooks]]` entries in `~/.config/kimi-code/config.toml` (hooks load
 at session start; run `/reload` in already-running sessions):
