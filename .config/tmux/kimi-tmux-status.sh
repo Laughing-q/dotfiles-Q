@@ -96,11 +96,37 @@ turn-end)
 	adjust "$(opt_for_kind "$kind")" -1 "$win"
 	[ "$outcome" = interrupt ] || mark_done "$win"
 	;;
+# Background-task accounting pairs TaskStarted with terminal Notifications, and
+# tracks per-session outstanding counts ("count window_id" in <session_id>.bg) so
+# session-end can sweep tasks that end without any notification (e.g. TaskStop,
+# verified: stopped tasks emit none) or die with the session. One global lock
+# keeps the window counter and the session file consistent.
 bg-begin)
-	adjust @kimi_bg 1 "$(pane_window)"
+	win=$(pane_window)
+	[ -n "$win" ] || exit 0
+	(
+		flock -w 5 9 || exit 0
+		n=0
+		[ -f "$STATE_DIR/$session_id.bg" ] && read -r n _ <"$STATE_DIR/$session_id.bg"
+		printf '%s %s\n' "$((n + 1))" "$win" >"$STATE_DIR/$session_id.bg"
+	) 9>"$STATE_DIR/.lock.bg"
+	adjust @kimi_bg 1 "$win"
 	;;
 bg-end)
-	adjust @kimi_bg -1 "$(pane_window)"
+	win=$(pane_window)
+	(
+		flock -w 5 9 || exit 0
+		if [ -f "$STATE_DIR/$session_id.bg" ]; then
+			read -r n win <"$STATE_DIR/$session_id.bg"
+			n=$((n - 1))
+			if [ "$n" -le 0 ]; then
+				rm -f "$STATE_DIR/$session_id.bg"
+			else
+				printf '%s %s\n' "$n" "$win" >"$STATE_DIR/$session_id.bg"
+			fi
+		fi
+	) 9>"$STATE_DIR/.lock.bg"
+	adjust @kimi_bg -1 "$win"
 	;;
 session-end)
 	if [ -f "$STATE_DIR/$session_id" ]; then
@@ -108,6 +134,20 @@ session-end)
 		rm -f "$STATE_DIR/$session_id"
 		adjust "$(opt_for_kind "$kind")" -1 "$win"
 	fi
+	if [ -f "$STATE_DIR/$session_id.bg" ]; then
+		read -r n win <"$STATE_DIR/$session_id.bg"
+		rm -f "$STATE_DIR/$session_id.bg"
+		adjust @kimi_bg -"$n" "$win"
+	fi
+	;;
+# manual reset for a window whose icons got stuck: run from the affected pane
+clear)
+	win=$(pane_window)
+	[ -n "$win" ] || exit 0
+	tmux set-option -wqu -t "$win" @kimi_run 2>/dev/null
+	tmux set-option -wqu -t "$win" @kimi_done 2>/dev/null
+	tmux set-option -wqu -t "$win" @kimi_bg 2>/dev/null
+	refresh_status
 	;;
 esac
 exit 0

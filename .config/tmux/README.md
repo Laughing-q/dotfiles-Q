@@ -53,10 +53,16 @@ timeout = 5
 
 [[hooks]]
 event = "Notification"
-matcher = "task\\.completed"
+# covers every terminal task status; task.completed/task.failed verified, and
+# TaskStop emits no Notification at all (session-end sweeps those counters)
+matcher = "task\\.(completed|failed|timed_out|terminated|killed|stopped)"
 command = "~/.config/tmux/kimi-tmux-status.sh bg-end"
 timeout = 5
 ```
+
+If an icon ever gets stuck (e.g. a task killed before the session ended), run
+`~/.config/tmux/kimi-tmux-status.sh clear` from a pane in that window to reset
+its counters.
 
 * * *
 
