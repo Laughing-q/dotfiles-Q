@@ -5,8 +5,13 @@ The status bar shows one colored `●` per state next to each window (one window
 one project), driven by Kimi Code hooks:
 
 - orange `●` — an agent turn is running in that window
-- green `●` — a turn finished and the window hasn't been viewed since (clears on
-  select, including via the `M-w` choose-tree)
+- green `●` — a turn finished and that *session* hasn't been reviewed since.
+  Tracked per session (`@kimi_done` holds session ids), so checking one agent
+  never clears another's dot. Clears only by: focusing that agent's terminal
+  buffer (`~/.config/nvim/lua/lq/configs/agents.lua` calls `kimi-tmux-status.sh
+  seen <session_id>` on WinEnter/BufEnter), sending it a new turn, or the
+  session exiting. Plain window selection does *not* clear it; agents running
+  outside the nvim manager clear on their next turn or via `clear`
 - blue `●` — background task(s) or cron-fired turns running
 - states stack; counters handle multiple agents per window
 
@@ -14,8 +19,8 @@ Files:
 
 - `kimi-tmux-status.sh` — hook handler; stores state in per-window options
   `@kimi_run` / `@kimi_done` / `@kimi_bg` via `$TMUX_PANE` (no jq needed)
-- `.tmux.conf` — `window-status-format` renders the icons; `after-select-window`
-  and `session-window-changed` hooks clear the green dot
+- `.tmux.conf` — `window-status-format` renders the icons (no tmux hooks; all
+  state changes flow through the script)
 
 Requires these `[[hooks]]` entries in `~/.config/kimi-code/config.toml` (hooks load
 at session start; run `/reload` in already-running sessions):

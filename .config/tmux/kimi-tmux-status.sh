@@ -4,7 +4,10 @@
 #
 # State is kept in window user options, rendered by window-status-format:
 #   @kimi_run   counter, turns running (orange ●)
-#   @kimi_done  flag, turn finished and window not viewed since (green ●)
+#   @kimi_done  space-separated session ids finished but not yet reviewed (green ●);
+#               cleared per session — never by mere window selection, so checking
+#               one agent can't dismiss another's (agents.lua calls `seen` when the
+#               agent's terminal buffer is focused; turn-begin/session-end also clear)
 #   @kimi_bg    counter, background tasks / cron turns (blue ●)
 #
 # Hooks pass a JSON payload on stdin ({session_id, origin_kind, ...}); the pane is
@@ -17,7 +20,12 @@ set -u
 STATE_DIR=/tmp/kimi-tmux-status
 mkdir -p "$STATE_DIR" 2>/dev/null || exit 0
 
-payload="$(cat 2>/dev/null || true)"
+# seen/clear are invoked manually or from nvim — no JSON payload, and reading
+# stdin would block on a terminal
+case "${1:-}" in
+seen | clear) payload="" ;;
+*) payload="$(cat 2>/dev/null || true)" ;;
+esac
 
 # extract a flat string field from the payload (no jq dependency)
 json_str() {
@@ -58,14 +66,38 @@ adjust() {
 	refresh_status
 }
 
-# flag a window as "finished, needs review" unless the user is already viewing it
-mark_done() {
-	local win=$1 active
+# mark a session as "finished, needs review" on its window; a <sid>.done file
+# remembers which window holds it so done_del works without pane context
+done_add() { # <session_id> <window_id>
+	local sid=$1 win=$2 cur
+	[ -n "$win" ] && [ -n "$sid" ] || return 0
+	(
+		flock -w 5 9 || exit 0
+		cur=$(tmux show-option -wqv -t "$win" @kimi_done 2>/dev/null)
+		case " $cur " in *" $sid "*) exit 0 ;; esac
+		tmux set-option -wq -t "$win" @kimi_done "${cur:+$cur }$sid" 2>/dev/null
+		printf '%s\n' "$win" >"$STATE_DIR/$sid.done"
+	) 9>"$STATE_DIR/.lock.$win"
+	refresh_status
+}
+
+# clear one session's green, leaving other sessions' greens on the window intact
+done_del() { # <session_id>
+	local sid=$1 win cur new
+	[ -n "$sid" ] && [ -f "$STATE_DIR/$sid.done" ] || return 0
+	read -r win <"$STATE_DIR/$sid.done"
+	rm -f "$STATE_DIR/$sid.done"
 	[ -n "$win" ] || return 0
-	active=$(tmux display-message -p -t "$win" \
-		'#{?#{&&:#{window_active},#{session_attached}},1,0}' 2>/dev/null)
-	[ "$active" = "1" ] && return 0
-	tmux set-option -wq -t "$win" @kimi_done 1 2>/dev/null
+	(
+		flock -w 5 9 || exit 0
+		cur=$(tmux show-option -wqv -t "$win" @kimi_done 2>/dev/null)
+		new=$(printf '%s' " $cur " | sed "s/ $sid / /g; s/^ *//; s/ *$//")
+		if [ -n "$new" ]; then
+			tmux set-option -wq -t "$win" @kimi_done "$new" 2>/dev/null
+		else
+			tmux set-option -wqu -t "$win" @kimi_done 2>/dev/null
+		fi
+	) 9>"$STATE_DIR/.lock.$win"
 	refresh_status
 }
 
@@ -84,6 +116,9 @@ turn-begin)
 	case "$origin" in system_trigger | cron_job) kind=bg ;; esac
 	printf '%s %s\n' "$kind" "$win" >"$STATE_DIR/$session_id"
 	adjust "$(opt_for_kind "$kind")" 1 "$win"
+	# an interactive turn means the user is engaging this session right now;
+	# cron/system turns must not clear the green
+	[ "$kind" = run ] && done_del "$session_id"
 	;;
 turn-end)
 	outcome=${2:-ok}
@@ -94,7 +129,7 @@ turn-end)
 		rm -f "$STATE_DIR/$session_id"
 	fi
 	adjust "$(opt_for_kind "$kind")" -1 "$win"
-	[ "$outcome" = interrupt ] || mark_done "$win"
+	[ "$outcome" = interrupt ] || done_add "$session_id" "$win"
 	;;
 # Background-task accounting pairs TaskStarted with terminal Notifications, and
 # tracks per-session outstanding counts ("count window_id" in <session_id>.bg) so
@@ -139,6 +174,11 @@ session-end)
 		rm -f "$STATE_DIR/$session_id.bg"
 		adjust @kimi_bg -"$n" "$win"
 	fi
+	done_del "$session_id"
+	;;
+# called by agents.lua when the agent's terminal buffer is focused
+seen)
+	done_del "${2:-$session_id}"
 	;;
 # manual reset for a window whose icons got stuck: run from the affected pane
 clear)
@@ -147,6 +187,9 @@ clear)
 	tmux set-option -wqu -t "$win" @kimi_run 2>/dev/null
 	tmux set-option -wqu -t "$win" @kimi_done 2>/dev/null
 	tmux set-option -wqu -t "$win" @kimi_bg 2>/dev/null
+	for f in "$STATE_DIR"/*.done; do
+		[ -f "$f" ] && [ "$(cat "$f")" = "$win" ] && rm -f "$f"
+	done
 	refresh_status
 	;;
 esac
