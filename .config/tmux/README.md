@@ -1,3 +1,65 @@
+Agent status icons (personal addition)
+======================================
+
+The status bar shows one colored `●` per state next to each window (one window =
+one project), driven by Kimi Code hooks:
+
+- orange `●` — an agent turn is running in that window
+- green `●` — a turn finished and the window hasn't been viewed since (clears on
+  select, including via the `M-w` choose-tree)
+- blue `●` — background task(s) or cron-fired turns running
+- states stack; counters handle multiple agents per window
+
+Files:
+
+- `kimi-tmux-status.sh` — hook handler; stores state in per-window options
+  `@kimi_run` / `@kimi_done` / `@kimi_bg` via `$TMUX_PANE` (no jq needed)
+- `.tmux.conf` — `window-status-format` renders the icons; `after-select-window`
+  and `session-window-changed` hooks clear the green dot
+
+Requires these `[[hooks]]` entries in `~/.config/kimi-code/config.toml` (hooks load
+at session start; run `/reload` in already-running sessions):
+
+```toml
+[[hooks]]
+event = "TurnStarted"
+command = "~/.config/tmux/kimi-tmux-status.sh turn-begin"
+timeout = 5
+
+[[hooks]]
+event = "Stop"
+command = "~/.config/tmux/kimi-tmux-status.sh turn-end ok"
+timeout = 5
+
+[[hooks]]
+event = "StopFailure"
+command = "~/.config/tmux/kimi-tmux-status.sh turn-end fail"
+timeout = 5
+
+[[hooks]]
+event = "Interrupt"
+command = "~/.config/tmux/kimi-tmux-status.sh turn-end interrupt"
+timeout = 5
+
+[[hooks]]
+event = "SessionEnd"
+command = "~/.config/tmux/kimi-tmux-status.sh session-end"
+timeout = 5
+
+[[hooks]]
+event = "TaskStarted"
+command = "~/.config/tmux/kimi-tmux-status.sh bg-begin"
+timeout = 5
+
+[[hooks]]
+event = "Notification"
+matcher = "task\\.completed"
+command = "~/.config/tmux/kimi-tmux-status.sh bg-end"
+timeout = 5
+```
+
+* * *
+
 .tmux
 =====
 
