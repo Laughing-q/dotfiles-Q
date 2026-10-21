@@ -1,8 +1,8 @@
 Agent status icons (personal addition)
 ======================================
 
-The status bar shows one colored `●` per state next to each window (one window =
-one project), driven by Kimi Code hooks:
+The status bar shows colored `●` icons next to each window (one window = one
+project), driven by Kimi Code hooks — one `●` per agent, capped at 3 plus a `+`:
 
 - orange `●` — an agent turn is running in that window
 - green `●` — a turn finished and that *session* hasn't been reviewed since.

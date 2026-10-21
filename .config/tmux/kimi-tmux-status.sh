@@ -5,7 +5,7 @@
 # State is kept in window user options, rendered by window-status-format:
 #   @kimi_run   counter, turns running (orange ●)
 #   @kimi_done  space-separated session ids finished but not yet reviewed (green ●);
-#               cleared per session — checking one agent never dismisses another's:
+#               @kimi_donec mirrors the count for rendering. Cleared per session — checking one agent never dismisses another's:
 #               nvim-hosted agents via agents.lua (`seen` on buffer focus),
 #               CLI-in-pane agents via after-select-window (`seen-window`),
 #               any agent when it starts a new interactive turn or exits
@@ -95,7 +95,7 @@ adjust() {
 # mark a session as "finished, needs review" on its window; a <sid>.done file
 # records "window_id pane_id" so done_del/seen-window work without hook context
 done_add() { # <session_id> <window_id>
-	local sid=$1 win=$2 cur
+	local sid=$1 win=$2 cur new
 	[ -n "$win" ] && [ -n "$sid" ] || return 0
 	# no green needed while the user is already watching this CLI-in-pane session
 	session_visible "${TMUX_PANE:-}" && return 0
@@ -103,7 +103,10 @@ done_add() { # <session_id> <window_id>
 		flock -w 5 9 || exit 0
 		cur=$(tmux show-option -wqv -t "$win" @kimi_done 2>/dev/null)
 		case " $cur " in *" $sid "*) exit 0 ;; esac
-		tmux set-option -wq -t "$win" @kimi_done "${cur:+$cur }$sid" 2>/dev/null
+		new="${cur:+$cur }$sid"
+		set -- $new
+		tmux set-option -wq -t "$win" @kimi_done "$new" 2>/dev/null
+		tmux set-option -wq -t "$win" @kimi_donec "$#" 2>/dev/null
 		printf '%s %s\n' "$win" "${TMUX_PANE:-}" >"$STATE_DIR/$sid.done"
 	) 9>"$STATE_DIR/.lock.$win"
 	refresh_status
@@ -121,9 +124,12 @@ done_del() { # <session_id>
 		cur=$(tmux show-option -wqv -t "$win" @kimi_done 2>/dev/null)
 		new=$(printf '%s' " $cur " | sed "s/ $sid / /g; s/^ *//; s/ *$//")
 		if [ -n "$new" ]; then
+			set -- $new
 			tmux set-option -wq -t "$win" @kimi_done "$new" 2>/dev/null
+			tmux set-option -wq -t "$win" @kimi_donec "$#" 2>/dev/null
 		else
 			tmux set-option -wqu -t "$win" @kimi_done 2>/dev/null
+			tmux set-option -wqu -t "$win" @kimi_donec 2>/dev/null
 		fi
 	) 9>"$STATE_DIR/.lock.$win"
 	refresh_status
@@ -256,6 +262,7 @@ clear)
 	[ -n "$win" ] || exit 0
 	tmux set-option -wqu -t "$win" @kimi_run 2>/dev/null
 	tmux set-option -wqu -t "$win" @kimi_done 2>/dev/null
+	tmux set-option -wqu -t "$win" @kimi_donec 2>/dev/null
 	tmux set-option -wqu -t "$win" @kimi_bg 2>/dev/null
 	for f in "$STATE_DIR"/*.done; do
 		[ -f "$f" ] || continue
