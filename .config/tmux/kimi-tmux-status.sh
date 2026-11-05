@@ -1,24 +1,31 @@
 #!/usr/bin/env bash
-# kimi-tmux-status.sh — drive per-window agent status icons in the tmux status bar
-# from Kimi Code hooks (see [[hooks]] in ~/.config/kimi-code/config.toml).
+# kimi-tmux-status.sh — per-window agent status icons in the tmux status bar,
+# driven by Kimi Code hooks ([[hooks]] in ~/.config/kimi-code/config.toml).
 #
-# State is kept in window user options, rendered by window-status-format:
-#   @kimi_run   counter, turns running (orange ●)
-#   @kimi_done  space-separated session ids finished but not yet reviewed (green ●);
-#               @kimi_donec mirrors the count for rendering. Cleared per session — checking one agent never dismisses another's:
-#               nvim-hosted agents via agents.lua (`seen` on buffer focus),
-#               CLI-in-pane agents via after-select-window (`seen-window`),
-#               any agent when it starts a new interactive turn or exits
-#   @kimi_bg    counter, background tasks / cron turns (blue ●); reconciled against
-#               the session's task files at every turn end, because stopped tasks
-#               emit no Notification and would leak otherwise
+# Every event just writes/removes a per-session state file and then RECOMPUTES
+# the window's counters from filesystem truth — no delta counters — so crashed
+# sessions, killed tasks (they emit no Notification) and missed events all
+# self-heal on the next event:
+#   $STATE_DIR/<sid>       "run|bg window_id pid" — a turn in flight (bg = cron)
+#   $STATE_DIR/<sid>.done  "window_id pane_id"    — turn finished, not reviewed
+#   background tasks       — the project's tasks/bash-*.json with status running
+#                            (and the recorded pid still alive)
 #
-# Hooks pass a JSON payload on stdin ({session_id, origin_kind, ...}); the pane is
-# identified via $TMUX_PANE inherited from the CLI. Always exits 0 (fail-open).
+# Window options rendered by window-status-format (one ● per unit, capped at 3+):
+#   @kimi_run  turns running (orange)      @kimi_bg  background/cron (blue)
+#   @kimi_done / @kimi_donec  finished-unreviewed session ids + count (green)
+#
+# Green clears per session only: nvim-hosted agents when their buffer is focused
+# (agents.lua calls `seen`, and also auto-clears when a turn finishes in the
+# buffer being viewed), CLI-in-pane agents on window select (`seen-window` from
+# after-select-window), any agent on its next interactive turn or exit.
+#
+# Hooks pass a JSON payload on stdin ({session_id, origin_kind, cwd, ...}); the
+# pane is identified via $TMUX_PANE inherited from the CLI. Always exits 0.
 
 set -u
 
-# seen-window is invoked from a tmux set-hook (run-shell): no pane env, no payload
+# seen-window runs from a tmux set-hook (run-shell): no pane env, no payload
 case "${1:-}" in
 seen-window) ;;
 *)
@@ -29,9 +36,9 @@ esac
 STATE_DIR=/tmp/kimi-tmux-status
 mkdir -p "$STATE_DIR" 2>/dev/null || exit 0
 
-# seen/clear/seen-window don't read stdin (would block on a terminal)
+# seen/clear/seen-window/refresh don't read stdin (would block on a terminal)
 case "${1:-}" in
-seen | clear | seen-window) payload="" ;;
+seen | clear | seen-window | refresh) payload="" ;;
 *) payload="$(cat 2>/dev/null || true)" ;;
 esac
 
@@ -74,20 +81,82 @@ session_visible() {
 	[ "$active" = "1" ]
 }
 
-# adjust <@option> <delta> <window_id>; counter is unset when it reaches 0
-adjust() {
-	local opt=$1 delta=$2 win=$3 cur new
+# first kimi/kimi-code ancestor of this hook process (used to sweep state of
+# crashed/killed sessions on later events)
+kimi_pid() {
+	local p=$PPID c
+	while [ -n "$p" ] && [ "$p" != 1 ]; do
+		c=$(ps -o comm= -p "$p" 2>/dev/null) || break
+		case "$c" in kimi | kimi-code)
+			printf '%s\n' "$p"
+			return 0
+			;;
+		esac
+		p=$(ps -o ppid= -p "$p" 2>/dev/null | tr -d ' ')
+	done
+	return 1
+}
+
+set_counter() { # <window_id> <@option> <n>: set, or unset when not positive
+	[ -n "$1" ] || return 0
+	if [ "$3" -gt 0 ] 2>/dev/null; then
+		tmux set-option -wq -t "$1" "$2" "$3" 2>/dev/null
+	else
+		tmux set-option -wqu -t "$1" "$2" 2>/dev/null
+	fi
+}
+
+# running background tasks across every session of the project (workDir == cwd);
+# a task whose recorded pid is dead doesn't count (session died mid-task)
+project_tasks() { # <cwd>
+	local esc f tp n=0
+	[ -n "$1" ] || {
+		printf '0\n'
+		return 0
+	}
+	esc=$(printf '%s' "$1" | sed 's/[][\.*^$/]/\\&/g')
+	while read -r f; do
+		tp=$(grep -o '"pid":[0-9][0-9]*' "$f" 2>/dev/null | head -1 | cut -d: -f2)
+		if [ -n "$tp" ]; then
+			kill -0 "$tp" 2>/dev/null || continue
+		fi
+		n=$((n + 1))
+	done < <(
+		while read -r dir; do
+			[ -d "$dir" ] && grep -l '"status":"running"' "$dir"/agents/*/tasks/bash-*.json 2>/dev/null
+		done < <(sed -n '/"workDir": *"'"$esc"'"/{s/.*"sessionDir": *"\([^"]*\)".*/\1/p}' \
+			"$KIMI_HOME/session_index.jsonl" 2>/dev/null)
+	)
+	printf '%s\n' "$n"
+}
+
+# rewrite a window's run/bg counters from truth: live turn state files for that
+# window plus the project's running task files; dead sessions' files are swept
+recompute() { # <window_id> <cwd>
+	local win=$1 cwd=$2 f kind w pid run=0 bg=0
 	[ -n "$win" ] || return 0
 	(
 		flock -w 5 9 || exit 0
-		cur=$(tmux show-option -wqv -t "$win" "$opt" 2>/dev/null)
-		cur=${cur:-0}
-		new=$((cur + delta))
-		if [ "$new" -le 0 ]; then
-			tmux set-option -wqu -t "$win" "$opt" 2>/dev/null
-		else
-			tmux set-option -wq -t "$win" "$opt" "$new" 2>/dev/null
-		fi
+		for f in "$STATE_DIR"/*; do
+			[ -f "$f" ] || continue
+			case "$f" in
+			*.done | *.lock.*) continue ;;
+			*.bg) rm -f "$f"; continue ;; # legacy from the delta-counter version
+			esac
+			read -r kind w pid <"$f" 2>/dev/null || continue
+			[ "$w" = "$win" ] || continue
+			if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+				case "$kind" in
+				run) run=$((run + 1)) ;;
+				bg) bg=$((bg + 1)) ;;
+				esac
+			else
+				rm -f "$f"
+			fi
+		done
+		bg=$((bg + $(project_tasks "$cwd")))
+		set_counter "$win" @kimi_run "$run"
+		set_counter "$win" @kimi_bg "$bg"
 	) 9>"$STATE_DIR/.lock.$win"
 	refresh_status
 }
@@ -135,33 +204,6 @@ done_del() { # <session_id>
 	refresh_status
 }
 
-# true-up the session's blue counter against its task files: stopped tasks emit
-# no Notification (terminalNotificationSuppressed), so bg-end never fires for them
-bg_reconcile() { # <session_id> <window_id>
-	local sid=$1 win=$2 dir n have bwin
-	case "$sid" in pane-*) return 0 ;; esac
-	dir=$(sed -n '/"sessionId": *"'"$sid"'"/{s/.*"sessionDir": *"\([^"]*\)".*/\1/p;q}' \
-		"$KIMI_HOME/session_index.jsonl" 2>/dev/null)
-	[ -n "$dir" ] && [ -d "$dir" ] || return 0
-	n=$(grep -l '"status":"running"' "$dir"/agents/*/tasks/bash-*.json 2>/dev/null | wc -l)
-	(
-		flock -w 5 9 || exit 0
-		have=0
-		if [ -f "$STATE_DIR/$sid.bg" ]; then
-			read -r have bwin <"$STATE_DIR/$sid.bg"
-			win=$bwin
-		fi
-		[ -n "$win" ] || exit 0
-		[ "$n" -eq "$have" ] && exit 0
-		if [ "$n" -gt 0 ]; then
-			printf '%s %s\n' "$n" "$win" >"$STATE_DIR/$sid.bg"
-		else
-			rm -f "$STATE_DIR/$sid.bg"
-		fi
-		adjust @kimi_bg "$((n - have))" "$win"
-	) 9>"$STATE_DIR/.lock.bg"
-}
-
 opt_for_kind() { # run|bg -> window option name
 	[ "$1" = "bg" ] && printf '@kimi_bg' || printf '@kimi_run'
 }
@@ -175,68 +217,31 @@ turn-begin)
 	# cron-fired turns report origin_kind=cron_job; system covers other
 	# non-interactive triggers (verified empirically, docs list neither)
 	case "$origin" in system_trigger | cron_job) kind=bg ;; esac
-	printf '%s %s\n' "$kind" "$win" >"$STATE_DIR/$session_id"
-	adjust "$(opt_for_kind "$kind")" 1 "$win"
+	printf '%s %s %s\n' "$kind" "$win" "$(kimi_pid)" >"$STATE_DIR/$session_id"
 	# an interactive turn means the user is engaging this session right now;
 	# cron/system turns must not clear the green
 	[ "$kind" = run ] && done_del "$session_id"
+	recompute "$win" "$(json_str cwd)"
 	;;
 turn-end)
 	outcome=${2:-ok}
-	kind=run
 	win=$(pane_window)
 	if [ -f "$STATE_DIR/$session_id" ]; then
-		read -r kind win <"$STATE_DIR/$session_id"
+		read -r _ win _ <"$STATE_DIR/$session_id"
 		rm -f "$STATE_DIR/$session_id"
 	fi
-	adjust "$(opt_for_kind "$kind")" -1 "$win"
+	rm -f "$STATE_DIR/$session_id.bg" # legacy from the delta-counter version
 	[ "$outcome" = interrupt ] || done_add "$session_id" "$win"
-	bg_reconcile "$session_id" "$win"
+	recompute "$win" "$(json_str cwd)"
 	;;
-# Background-task accounting pairs TaskStarted with terminal Notifications, and
-# tracks per-session outstanding counts ("count window_id" in <session_id>.bg) so
-# session-end can sweep tasks that end without any notification (e.g. TaskStop,
-# verified: stopped tasks emit none) or die with the session. One global lock
-# keeps the window counter and the session file consistent.
-bg-begin)
-	win=$(pane_window)
-	[ -n "$win" ] || exit 0
-	(
-		flock -w 5 9 || exit 0
-		n=0
-		[ -f "$STATE_DIR/$session_id.bg" ] && read -r n _ <"$STATE_DIR/$session_id.bg"
-		printf '%s %s\n' "$((n + 1))" "$win" >"$STATE_DIR/$session_id.bg"
-	) 9>"$STATE_DIR/.lock.bg"
-	adjust @kimi_bg 1 "$win"
-	;;
-bg-end)
-	win=$(pane_window)
-	(
-		flock -w 5 9 || exit 0
-		if [ -f "$STATE_DIR/$session_id.bg" ]; then
-			read -r n win <"$STATE_DIR/$session_id.bg"
-			n=$((n - 1))
-			if [ "$n" -le 0 ]; then
-				rm -f "$STATE_DIR/$session_id.bg"
-			else
-				printf '%s %s\n' "$n" "$win" >"$STATE_DIR/$session_id.bg"
-			fi
-		fi
-	) 9>"$STATE_DIR/.lock.bg"
-	adjust @kimi_bg -1 "$win"
+# task truth comes from the session task files, so these are recompute triggers
+bg-begin | bg-end)
+	recompute "$(pane_window)" "$(json_str cwd)"
 	;;
 session-end)
-	if [ -f "$STATE_DIR/$session_id" ]; then
-		read -r kind win <"$STATE_DIR/$session_id"
-		rm -f "$STATE_DIR/$session_id"
-		adjust "$(opt_for_kind "$kind")" -1 "$win"
-	fi
-	if [ -f "$STATE_DIR/$session_id.bg" ]; then
-		read -r n win <"$STATE_DIR/$session_id.bg"
-		rm -f "$STATE_DIR/$session_id.bg"
-		adjust @kimi_bg -"$n" "$win"
-	fi
+	rm -f "$STATE_DIR/$session_id" "$STATE_DIR/$session_id.bg"
 	done_del "$session_id"
+	recompute "$(pane_window)" "$(json_str cwd)"
 	;;
 # called by agents.lua when the agent's terminal buffer is focused
 seen)
@@ -256,7 +261,7 @@ seen-window)
 		[ -n "$spane" ] && pane_is_kimi "$spane" && done_del "$sid"
 	done
 	;;
-# manual reset for a window whose icons got stuck: run from the affected pane
+# manual full reset for a window whose icons got stuck: run from the affected pane
 clear)
 	win=$(pane_window)
 	[ -n "$win" ] || exit 0
@@ -264,12 +269,22 @@ clear)
 	tmux set-option -wqu -t "$win" @kimi_done 2>/dev/null
 	tmux set-option -wqu -t "$win" @kimi_donec 2>/dev/null
 	tmux set-option -wqu -t "$win" @kimi_bg 2>/dev/null
-	for f in "$STATE_DIR"/*.done; do
+	for f in "$STATE_DIR"/*; do
 		[ -f "$f" ] || continue
-		read -r fwin _ <"$f"
-		[ "$fwin" = "$win" ] && rm -f "$f"
+		case "$f" in *.lock.*) continue ;; esac
+		read -r fa fb _ <"$f" 2>/dev/null || continue
+		case "$f" in
+		*.done) [ "$fa" = "$win" ] && rm -f "$f" ;; # "win pane"
+		*) [ "$fb" = "$win" ] && rm -f "$f" ;;      # "kind win pid"
+		esac
 	done
 	refresh_status
+	;;
+# recompute this pane's window from truth (repairs without clearing green state)
+refresh)
+	win=$(pane_window)
+	[ -n "$win" ] || exit 0
+	recompute "$win" "$(tmux display-message -p -t "$TMUX_PANE" '#{pane_current_path}' 2>/dev/null)"
 	;;
 esac
 exit 0

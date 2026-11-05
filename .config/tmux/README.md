@@ -9,21 +9,29 @@ project), driven by Kimi Code hooks — one `●` per agent, capped at 3 plus a 
   Tracked per session (`@kimi_done` holds session ids), so checking one agent
   never clears another's dot. Clears only by reviewing that agent: focusing its
   terminal buffer in nvim (`~/.config/nvim/lua/lq/configs/agents.lua` calls
-  `kimi-tmux-status.sh seen <session_id>` on WinEnter/BufEnter), selecting the
-  window of an agent running directly in a pane (the `after-select-window` hook
-  calls `seen-window`, which only clears agents whose pane foreground is the
-  kimi CLI itself), sending it a new turn, or the session exiting. A CLI-in-pane
-  session that finishes while you are already watching it is not marked at all
-- blue `●` — background task(s) or cron-fired turns running. The counter is
-  reconciled against the session's task files on every turn end, because
-  stopped/killed tasks emit no Notification and would otherwise leak until the
-  session exits
-- states stack; counters handle multiple agents per window
+  `kimi-tmux-status.sh seen <session_id>` on WinEnter/BufEnter, and also clears
+  automatically when a turn finishes in the buffer you are currently viewing),
+  selecting the window of an agent running directly in a pane (the
+  `after-select-window` hook calls `seen-window`, which only clears agents whose
+  pane foreground is the kimi CLI itself), sending it a new turn, or the session
+  exiting. A CLI-in-pane session that finishes while you are already watching it
+  is not marked at all
+- blue `●` — background task(s) or cron-fired turns running
+- states stack; one icon per agent, counters handle multiple agents per window
+
+The counters are not deltas: every hook event recomputes the window from
+filesystem truth — per-session turn files tagged with the agent's pid, plus the
+project's `tasks/bash-*.json` with `"status":"running"` and a live pid — so a
+crashed/killed session, a stopped task (which emits no Notification) or a missed
+event self-heals on the next event instead of leaking a stuck icon.
 
 Files:
 
-- `kimi-tmux-status.sh` — hook handler; stores state in per-window options
-  `@kimi_run` / `@kimi_done` / `@kimi_bg` via `$TMUX_PANE` (no jq needed)
+- `kimi-tmux-status.sh` — hook handler; writes state files under
+  `/tmp/kimi-tmux-status/` and recomputes the per-window options `@kimi_run` /
+  `@kimi_bg` / `@kimi_done`(+c) via `$TMUX_PANE` (no jq needed). Manual repair:
+  `refresh` recomputes the pane's window from truth; `clear` wipes all three
+  icons for the pane's window
 - `.tmux.conf` — `window-status-format` renders the icons; `after-select-window`
   hook clears the green of agents visible directly in a pane
 
@@ -70,9 +78,10 @@ command = "~/.config/tmux/kimi-tmux-status.sh bg-end"
 timeout = 5
 ```
 
-If an icon ever gets stuck (e.g. a task killed before the session ended), run
-`~/.config/tmux/kimi-tmux-status.sh clear` from a pane in that window to reset
-its counters.
+Manual repair: `~/.config/tmux/kimi-tmux-status.sh refresh` (recompute run/bg
+from truth, keeps green) or `... clear` (wipe all icons) from a pane in the
+affected window. Stuck icons should be rare: recomputation sweeps state left by
+crashed sessions and stopped tasks automatically on the next event.
 
 * * *
 
