@@ -67,8 +67,9 @@ pane_window() {
 
 # the pane runs a kimi CLI directly (not nvim hosting agents in terminal buffers)
 pane_is_kimi() {
-	tmux display-message -p -t "$1" '#{pane_current_command}' 2>/dev/null |
-		grep -qxE 'kimi(-code)?'
+	local cmd
+	cmd=$(tmux display-message -p -t "$1" '#{pane_current_command}' 2>/dev/null) || return 1
+	case "$cmd" in kimi*) return 0 ;; *) return 1 ;; esac
 }
 
 # the user is watching this exact session: kimi runs directly in the pane and its
@@ -81,13 +82,13 @@ session_visible() {
 	[ "$active" = "1" ]
 }
 
-# first kimi/kimi-code ancestor of this hook process (used to sweep state of
-# crashed/killed sessions on later events)
+# first kimi* ancestor of this hook process (used to sweep state of
+# crashed/killed sessions on later events); comm varies: kimi, kimi-code, kimi-co
 kimi_pid() {
 	local p=$PPID c
 	while [ -n "$p" ] && [ "$p" != 1 ]; do
 		c=$(ps -o comm= -p "$p" 2>/dev/null) || break
-		case "$c" in kimi | kimi-code)
+		case "$c" in kimi*)
 			printf '%s\n' "$p"
 			return 0
 			;;
@@ -145,7 +146,9 @@ recompute() { # <window_id> <cwd>
 			esac
 			read -r kind w pid <"$f" 2>/dev/null || continue
 			[ "$w" = "$win" ] || continue
-			if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+			# pid-less files can't be liveness-checked; keep them (their own
+			# turn-end/session-end removes them)
+			if [ -z "$pid" ] || kill -0 "$pid" 2>/dev/null; then
 				case "$kind" in
 				run) run=$((run + 1)) ;;
 				bg) bg=$((bg + 1)) ;;
