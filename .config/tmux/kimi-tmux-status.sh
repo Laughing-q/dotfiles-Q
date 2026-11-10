@@ -72,14 +72,25 @@ pane_is_kimi() {
 	case "$cmd" in kimi*) return 0 ;; *) return 1 ;; esac
 }
 
-# the user is watching this exact session: kimi runs directly in the pane and its
-# window is active in an attached session
-session_visible() {
-	local pane=$1 active
-	[ -n "$pane" ] && pane_is_kimi "$pane" || return 1
+# the user is watching this exact session right now: its pane is in the active
+# window of an attached session, and either the pane runs a kimi CLI directly or
+# nvim reports the session's buffer as focused (agents.lua publishes the focused
+# session id per pane to $STATE_DIR/focused.<pane>)
+session_visible() { # <pane> <session_id>
+	local pane=$1 sid=$2 active cmd
+	[ -n "$pane" ] || return 1
 	active=$(tmux display-message -p -t "$pane" \
 		'#{?#{&&:#{window_active},#{session_attached}},1,0}' 2>/dev/null)
-	[ "$active" = "1" ]
+	[ "$active" = "1" ] || return 1
+	cmd=$(tmux display-message -p -t "$pane" '#{pane_current_command}' 2>/dev/null)
+	case "$cmd" in
+	kimi*) return 0 ;;
+	nvim)
+		[ -f "$STATE_DIR/focused.$pane" ] || return 1
+		[ "$(cat "$STATE_DIR/focused.$pane" 2>/dev/null)" = "$sid" ]
+		;;
+	*) return 1 ;;
+	esac
 }
 
 # first kimi* ancestor of this hook process (used to sweep state of
@@ -134,15 +145,22 @@ project_tasks() { # <cwd>
 # rewrite a window's run/bg counters from truth: live turn state files for that
 # window plus the project's running task files; dead sessions' files are swept
 recompute() { # <window_id> <cwd>
-	local win=$1 cwd=$2 f kind w pid run=0 bg=0
+	local win=$1 cwd=$2 f kind w pid run=0 bg=0 wins
 	[ -n "$win" ] || return 0
 	(
 		flock -w 5 9 || exit 0
+		wins=$(tmux list-windows -a -F '#{window_id}' 2>/dev/null)
 		for f in "$STATE_DIR"/*; do
 			[ -f "$f" ] || continue
 			case "$f" in
-			*.done | *.lock.*) continue ;;
+			*.lock.*) continue ;;
 			*.bg) rm -f "$f"; continue ;; # legacy from the delta-counter version
+			*.done)
+				# sweep greens whose window is gone; the option died with it
+				read -r w _ <"$f" 2>/dev/null || continue
+				grep -qxF "$w" <<<"$wins" || rm -f "$f"
+				continue
+				;;
 			esac
 			read -r kind w pid <"$f" 2>/dev/null || continue
 			[ "$w" = "$win" ] || continue
@@ -169,8 +187,8 @@ recompute() { # <window_id> <cwd>
 done_add() { # <session_id> <window_id>
 	local sid=$1 win=$2 cur new
 	[ -n "$win" ] && [ -n "$sid" ] || return 0
-	# no green needed while the user is already watching this CLI-in-pane session
-	session_visible "${TMUX_PANE:-}" && return 0
+	# no green needed while the user is already watching this session
+	session_visible "${TMUX_PANE:-}" "$sid" && return 0
 	(
 		flock -w 5 9 || exit 0
 		cur=$(tmux show-option -wqv -t "$win" @kimi_done 2>/dev/null)

@@ -9,13 +9,11 @@ project), driven by Kimi Code hooks — one `●` per agent, capped at 3 plus a 
   Tracked per session (`@kimi_done` holds session ids), so checking one agent
   never clears another's dot. Clears only by reviewing that agent: focusing its
   terminal buffer in nvim (`~/.config/nvim/lua/lq/configs/agents.lua` calls
-  `kimi-tmux-status.sh seen <session_id>` on WinEnter/BufEnter, and also clears
-  automatically when a turn finishes in the buffer you are currently viewing),
-  selecting the window of an agent running directly in a pane (the
-  `after-select-window` hook calls `seen-window`, which only clears agents whose
-  pane foreground is the kimi CLI itself), sending it a new turn, or the session
-  exiting. A CLI-in-pane session that finishes while you are already watching it
-  is not marked at all
+  `kimi-tmux-status.sh seen <session_id>` on WinEnter/BufEnter), browsing its
+  preview in the nvim agents sidebar, sending it a new turn, or the session
+  exiting. A turn that finishes while you are already watching it — CLI-in-pane
+  or the focused nvim buffer — is not marked at all (nvim publishes the focused
+  session per pane; the `after-select-window` hook covers CLI-in-pane agents)
 - blue `●` — background task(s) or cron-fired turns running
 - states stack; one icon per agent, counters handle multiple agents per window
 
