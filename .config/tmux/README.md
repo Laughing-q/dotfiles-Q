@@ -21,7 +21,13 @@ The counters are not deltas: every hook event recomputes the window from
 filesystem truth — per-session turn files tagged with the agent's pid, plus the
 project's `tasks/bash-*.json` with `"status":"running"` and a live pid — so a
 crashed/killed session, a stopped task (which emits no Notification) or a missed
-event self-heals on the next event instead of leaking a stuck icon.
+event self-heals on the next event instead of leaking a stuck icon. One hook gap
+is handled explicitly: prompt-only turns (notification injections that never
+reach the LLM) fire `TurnStarted` but no `Stop`, so recomputation also sweeps
+turn files whose session wire log shows no turn in flight (last `turn.ended`
+newer than the last `turn.prompt`), and the `after-select-window` hook
+recomputes run/bg on every window switch so a stale icon heals by just looking
+at the window.
 
 Files:
 
@@ -31,7 +37,8 @@ Files:
   `refresh` recomputes the pane's window from truth; `clear` wipes all three
   icons for the pane's window
 - `.tmux.conf` — `window-status-format` renders the icons; `after-select-window`
-  hook clears the green of agents visible directly in a pane
+  hook clears the green of agents visible directly in a pane and recomputes
+  run/bg so stale icons self-heal on window switch
 
 Requires these `[[hooks]]` entries in `~/.config/kimi-code/config.toml` (hooks load
 at session start; run `/reload` in already-running sessions):
@@ -71,7 +78,7 @@ timeout = 5
 event = "Notification"
 # covers every terminal task status; task.completed/task.failed verified, and
 # TaskStop emits no Notification at all (session-end sweeps those counters)
-matcher = "task\\.(completed|failed|timed_out|terminated|killed|stopped)"
+matcher = "task\\.(completed|failed|timed_out|terminated|killed|stopped|lost)"
 command = "~/.config/tmux/kimi-tmux-status.sh bg-end"
 timeout = 5
 ```
@@ -79,7 +86,8 @@ timeout = 5
 Manual repair: `~/.config/tmux/kimi-tmux-status.sh refresh` (recompute run/bg
 from truth, keeps green) or `... clear` (wipe all icons) from a pane in the
 affected window. Stuck icons should be rare: recomputation sweeps state left by
-crashed sessions and stopped tasks automatically on the next event.
+crashed sessions, stopped tasks and prompt-only turns (whose `Stop` hook never
+fires) automatically on the next event or window switch.
 
 * * *
 

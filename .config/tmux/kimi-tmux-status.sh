@@ -11,6 +11,11 @@
 #   background tasks       — the project's tasks/bash-*.json with status running
 #                            (and the recorded pid still alive)
 #
+# The Stop hook is lost for prompt-only turns (notification injections that
+# never reach the LLM fire TurnStarted but no Stop), so recompute also sweeps
+# turn files whose session wire log shows no turn in flight (last turn.ended
+# newer than the last turn.prompt).
+#
 # Window options rendered by window-status-format (one ● per unit, capped at 3+):
 #   @kimi_run  turns running (orange)      @kimi_bg  background/cron (blue)
 #   @kimi_done / @kimi_donec  finished-unreviewed session ids + count (green)
@@ -142,6 +147,28 @@ project_tasks() { # <cwd>
 	printf '%s\n' "$n"
 }
 
+# resolve a session id to its sessionDir via the session index
+session_dir() { # <sid>
+	sed -n '/"sessionId": *"'"$1"'"/{s/.*"sessionDir": *"\([^"]*\)".*/\1/p}' \
+		"$KIMI_HOME/session_index.jsonl" 2>/dev/null | tail -1
+}
+
+# true when the session's wire log shows no turn in flight — the last turn.ended
+# is at/after the last turn.prompt. Catches state files leaked by prompt-only
+# turns, whose lost Stop hook would otherwise keep the icon until session exit.
+turn_is_over() { # <sid>
+	local sd w prompt end
+	case "$1" in session_*) ;; *) return 1 ;; esac
+	sd=$(session_dir "$1")
+	[ -n "$sd" ] && [ -f "$sd/agents/main/wire.jsonl" ] || return 1
+	w=$sd/agents/main/wire.jsonl
+	prompt=$(grep '"type":"turn.prompt"' "$w" 2>/dev/null | tail -1 |
+		sed -n 's/.*"time":\([0-9][0-9]*\).*/\1/p')
+	end=$(grep '"type":"turn.ended"' "$w" 2>/dev/null | tail -1 |
+		sed -n 's/.*"time":\([0-9][0-9]*\).*/\1/p')
+	[ -n "$prompt" ] && [ -n "$end" ] && [ "$end" -ge "$prompt" ]
+}
+
 # rewrite a window's run/bg counters from truth: live turn state files for that
 # window plus the project's running task files; dead sessions' files are swept
 recompute() { # <window_id> <cwd>
@@ -167,6 +194,10 @@ recompute() { # <window_id> <cwd>
 			# pid-less files can't be liveness-checked; keep them (their own
 			# turn-end/session-end removes them)
 			if [ -z "$pid" ] || kill -0 "$pid" 2>/dev/null; then
+				if turn_is_over "${f##*/}"; then
+					rm -f "$f"
+					continue
+				fi
 				case "$kind" in
 				run) run=$((run + 1)) ;;
 				bg) bg=$((bg + 1)) ;;
@@ -270,10 +301,13 @@ seen)
 	;;
 # called by tmux after-select-window with the window id: viewing a window checks
 # any agent that runs directly in one of its panes; nvim-hosted agents keep their
-# green until their own buffer is focused (agents.lua `seen`)
+# green until their own buffer is focused (agents.lua `seen`). Also recomputes
+# run/bg so a stale icon self-heals on window switch.
 seen-window)
 	win=${2:-}
 	[ -n "$win" ] || exit 0
+	recompute "$win" \
+		"$(tmux display-message -p -t "$win" '#{pane_current_path}' 2>/dev/null)"
 	cur=$(tmux show-option -wqv -t "$win" @kimi_done 2>/dev/null)
 	[ -n "$cur" ] || exit 0
 	for sid in $cur; do
