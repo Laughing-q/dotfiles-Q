@@ -8,8 +8,9 @@
 # self-heal on the next event:
 #   $STATE_DIR/<sid>       "run|bg window_id pid" — a turn in flight (bg = cron)
 #   $STATE_DIR/<sid>.done  "window_id pane_id"    — turn finished, not reviewed
-#   background tasks       — the project's tasks/bash-*.json with status running
-#                            (and the recorded pid still alive)
+#   background tasks       — per session: wire.jsonl task.started with no
+#                            task.terminated, union legacy tasks/bash-*.json
+#                            with status running; live pid required
 #
 # The Stop hook is lost for prompt-only turns (notification injections that
 # never reach the LLM fire TurnStarted but no Stop), so recompute also sweeps
@@ -123,28 +124,57 @@ set_counter() { # <window_id> <@option> <n>: set, or unset when not positive
 	fi
 }
 
-# running background tasks across every session of the project (workDir == cwd);
-# a task whose recorded pid is dead doesn't count (session died mid-task)
+# running background tasks across every session of the project (workDir == cwd).
+# Two on-disk truths, unioned by task id (newer kimi writes no json):
+#   agents/*/tasks/bash-*.json — legacy "status":"running" (pid from json)
+#   agents/*/wire.jsonl — task.started without task.terminated (pid from info),
+#                         wins over the json for the same task id
+# a task whose recorded pid is dead doesn't count (killed/lost tasks may leave
+# no end record at all)
 project_tasks() { # <cwd>
-	local esc f tp n=0
+	local esc dir f pid
+	local wires=() jsons=()
 	[ -n "$1" ] || {
 		printf '0\n'
 		return 0
 	}
 	esc=$(printf '%s' "$1" | sed 's/[][\.*^$/]/\\&/g')
-	while read -r f; do
-		tp=$(grep -o '"pid":[0-9][0-9]*' "$f" 2>/dev/null | head -1 | cut -d: -f2)
-		if [ -n "$tp" ]; then
-			kill -0 "$tp" 2>/dev/null || continue
+	while read -r dir; do
+		[ -d "$dir" ] || continue
+		for f in "$dir"/agents/*/wire.jsonl; do
+			[ -f "$f" ] && wires+=("$f")
+		done
+		for f in "$dir"/agents/*/tasks/bash-*.json; do
+			[ -f "$f" ] && jsons+=("$f")
+		done
+	done < <(sed -n '/"workDir": *"'"$esc"'"/{s/.*"sessionDir": *"\([^"]*\)".*/\1/p}' \
+		"$KIMI_HOME/session_index.jsonl" 2>/dev/null)
+	{
+		if [ ${#jsons[@]} -gt 0 ]; then
+			# legacy json truth first; the wire records below win for the
+			# same task id
+			while read -r f; do
+				pid=$(sed -n 's/.*"pid":\([0-9][0-9]*\).*/\1/p' "$f" 2>/dev/null | head -1)
+				printf 'JSONTASK %s %s\n' "${f##*/tasks/}" "$pid"
+			done < <(grep -l '"status" *: *"running"' "${jsons[@]}" 2>/dev/null)
 		fi
-		n=$((n + 1))
-	done < <(
-		while read -r dir; do
-			[ -d "$dir" ] && grep -l '"status":"running"' "$dir"/agents/*/tasks/bash-*.json 2>/dev/null
-		done < <(sed -n '/"workDir": *"'"$esc"'"/{s/.*"sessionDir": *"\([^"]*\)".*/\1/p}' \
-			"$KIMI_HOME/session_index.jsonl" 2>/dev/null)
-	)
-	printf '%s\n' "$n"
+		[ ${#wires[@]} -gt 0 ] && grep -h '"type":"task\.' "${wires[@]}" 2>/dev/null
+	} | awk '
+		/^JSONTASK / { tid=$2; sub(/\.json$/, "", tid); if (!(tid in run)) run[tid]=$3; next }
+		/"type":"task\.(started|terminated)"/ {
+			tid=""; pid=""
+			if (match($0, /"taskId":"[^"]+"/)) tid=substr($0, RSTART+10, RLENGTH-11)
+			if (match($0, /"pid":[0-9]+/)) pid=substr($0, RSTART+6, RLENGTH-6)
+			if (tid == "") next
+			if ($0 ~ /"type":"task\.started"/) run[tid]=pid; else delete run[tid]
+			next
+		}
+		END {
+			n=0
+			for (t in run)
+				if (run[t] == "" || system("kill -0 " run[t] " 2>/dev/null") == 0) n++
+			print n
+		}'
 }
 
 # resolve a session id to its sessionDir via the session index

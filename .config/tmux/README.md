@@ -14,14 +14,17 @@ project), driven by Kimi Code hooks — one `●` per agent, capped at 3 plus a 
   exiting. A turn that finishes while you are already watching it — CLI-in-pane
   or the focused nvim buffer — is not marked at all (nvim publishes the focused
   session per pane; the `after-select-window` hook covers CLI-in-pane agents)
-- blue `●` — background task(s) or cron-fired turns running
+- blue `●` — background task(s) or cron-fired turns running. Tasks are read
+  from each session's wire log (`task.started` without `task.terminated`, live
+  pid required), unioned with the legacy `tasks/bash-*.json` (`status running`)
+  written by older kimi versions
 - states stack; one icon per agent, counters handle multiple agents per window
 
 The counters are not deltas: every hook event recomputes the window from
 filesystem truth — per-session turn files tagged with the agent's pid, plus the
-project's `tasks/bash-*.json` with `"status":"running"` and a live pid — so a
-crashed/killed session, a stopped task (which emits no Notification) or a missed
-event self-heals on the next event instead of leaking a stuck icon. One hook gap
+project's task records described above — so a crashed/killed session, a stopped
+task (which emits no Notification) or a missed event self-heals on the next
+event instead of leaking a stuck icon. One hook gap
 is handled explicitly: prompt-only turns (notification injections that never
 reach the LLM) fire `TurnStarted` but no `Stop`, so recomputation also sweeps
 turn files whose session wire log shows no turn in flight (last `turn.ended`
